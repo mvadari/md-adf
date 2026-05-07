@@ -1,0 +1,16 @@
+{
+  "id": "roundtrip.supported.emphasis",
+  "direction": "roundtrip",
+  "description": "Round-trips a paragraph with emphasis.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["paragraph", "text", "em"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {
+    "js": "Conversion logic is not implemented in the bootstrap skeleton.",
+    "python": "Conversion logic is not implemented in the bootstrap skeleton."
+  }
+}

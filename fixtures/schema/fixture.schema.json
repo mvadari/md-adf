@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adfmd.dev/schema/fixture.schema.json",
+  "title": "adfmd fixture case",
+  "type": "object",
+  "required": [
+    "id",
+    "direction",
+    "description",
+    "profile",
+    "options",
+    "features",
+    "expectedLoss",
+    "skip",
+    "xfail"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*$"
+    },
+    "direction": {
+      "enum": ["adf-to-md", "md-to-adf", "roundtrip"]
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1
+    },
+    "options": {
+      "type": "object"
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "expectedLoss": {
+      "type": "boolean"
+    },
+    "skip": {
+      "$ref": "#/$defs/statusMap"
+    },
+    "xfail": {
+      "$ref": "#/$defs/statusMap"
+    }
+  },
+  "$defs": {
+    "statusMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

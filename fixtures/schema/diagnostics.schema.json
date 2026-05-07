@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://adfmd.dev/schema/diagnostics.schema.json",
+  "title": "adfmd diagnostics",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["severity", "code", "message"],
+    "additionalProperties": false,
+    "properties": {
+      "severity": {
+        "enum": ["info", "warning", "error"]
+      },
+      "code": {
+        "type": "string",
+        "minLength": 1
+      },
+      "path": {
+        "type": "string"
+      },
+      "message": {
+        "type": "string"
+      },
+      "fallback": {
+        "type": "string"
+      }
+    }
+  }
+}

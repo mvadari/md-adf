@@ -1,0 +1,16 @@
+{
+  "id": "md-to-adf.basic.paragraph",
+  "direction": "md-to-adf",
+  "description": "Converts a simple Markdown paragraph to ADF.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["paragraph", "text"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {
+    "js": "Conversion logic is not implemented in the bootstrap skeleton.",
+    "python": "Conversion logic is not implemented in the bootstrap skeleton."
+  }
+}

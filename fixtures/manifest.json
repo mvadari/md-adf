@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-07T00:00:00Z",
+  "cases": [
+    {
+      "id": "adf-to-md.basic.paragraph",
+      "path": "adf-to-md/basic/paragraph/case.json",
+      "direction": "adf-to-md",
+      "features": ["paragraph", "text"]
+    },
+    {
+      "id": "md-to-adf.basic.paragraph",
+      "path": "md-to-adf/basic/paragraph/case.json",
+      "direction": "md-to-adf",
+      "features": ["paragraph", "text"]
+    },
+    {
+      "id": "roundtrip.supported.emphasis",
+      "path": "roundtrip/supported/emphasis/case.json",
+      "direction": "roundtrip",
+      "features": ["paragraph", "text", "em"]
+    }
+  ]
+}

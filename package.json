@@ -1,0 +1,24 @@
+{
+  "name": "adfmd-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Workspace orchestration for ADF-Markdown converter implementations.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/js"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace packages/js",
+    "fixtures": "npm run validate:fixtures",
+    "format": "npm run format --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run validate:fixtures && npm run test:js && npm run test:python",
+    "test:js": "npm run test --workspace packages/js",
+    "test:python": "python3 tools/conformance/run-python.py",
+    "validate:fixtures": "node tools/fixtures/validate-fixtures.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
