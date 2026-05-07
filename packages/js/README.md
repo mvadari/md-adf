@@ -13,28 +13,23 @@ Requires Node.js 20 or newer.
 ## API
 
 ```ts
-import {
-  adfToMarkdown,
-  markdownToAdf,
-  parseAdf,
-  validateAdf,
-} from "adfmd";
+import { adfToMarkdown, markdownToAdf, parseAdf, validateAdf } from "adfmd"
 
-const markdownResult = adfToMarkdown(adfDocument);
-console.log(markdownResult.value);
-console.error(markdownResult.diagnostics);
+const markdownResult = adfToMarkdown(adfDocument)
+console.log(markdownResult.value)
+console.error(markdownResult.diagnostics)
 
-const adfResult = markdownToAdf("## Hello\n\nThis is **ADF**.");
-console.log(adfResult.value);
+const adfResult = markdownToAdf("## Hello\n\nThis is **ADF**.")
+console.log(adfResult.value)
 ```
 
 Results have this shape:
 
 ```ts
 type ConversionResult<T> = {
-  value: T;
-  diagnostics: Diagnostic[];
-};
+  value: T
+  diagnostics: Diagnostic[]
+}
 ```
 
 Current `ConversionOptions` support:
