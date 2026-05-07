@@ -74,11 +74,17 @@ def main() -> int:
                 expected_adf = json.loads(
                     (case_dir / "expected.normalized.adf.json").read_text(encoding="utf-8")
                 )
+                expected_diagnostics_path = case_dir / "expected.diagnostics.json"
+                expected_markdown_diagnostics = (
+                    json.loads(expected_diagnostics_path.read_text(encoding="utf-8"))
+                    if expected_diagnostics_path.exists()
+                    else []
+                )
 
                 markdown = adf_to_markdown(input_adf, test_case.get("options"))
                 _assert_diagnostics_equal(
                     [_diagnostic_to_json(diagnostic) for diagnostic in markdown.diagnostics],
-                    [],
+                    expected_markdown_diagnostics,
                     f"{test_case['id']} adf-to-md",
                 )
                 adf = markdown_to_adf(markdown.value, test_case.get("options"))

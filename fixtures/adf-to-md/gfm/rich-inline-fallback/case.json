@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.rich-inline-fallback",
+  "direction": "adf-to-md",
+  "description": "Renders schema-valid Atlassian rich inline nodes as Markdown text fallbacks.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["mention", "emoji", "date", "status", "richInlineFallback"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

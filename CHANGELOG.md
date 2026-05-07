@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Added schema-valid ADF-to-Markdown text fallbacks for Atlassian `mention`, `emoji`, `date`, and `status` inline nodes in both JS and Python, with diagnostics for lossy rich inline attributes.
+
 ## 0.1.0 - 2026-05-07
 
 Initial release candidate for the JavaScript/TypeScript and Python packages.

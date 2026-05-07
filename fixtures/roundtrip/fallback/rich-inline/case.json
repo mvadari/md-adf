@@ -1,0 +1,13 @@
+{
+  "id": "roundtrip.fallback.rich-inline",
+  "direction": "roundtrip",
+  "description": "Round-trips rich inline Markdown fallbacks as schema-valid plain text.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["mention", "emoji", "date", "status", "richInlineFallback"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-07T17:22:06.601Z",
+  "generatedAt": "2026-05-07T17:27:38.168Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -50,6 +50,18 @@
       "features": [
         "mediaSingle",
         "media"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.rich-inline-fallback",
+      "path": "adf-to-md/gfm/rich-inline-fallback/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "mention",
+        "emoji",
+        "date",
+        "status",
+        "richInlineFallback"
       ]
     },
     {
@@ -235,6 +247,18 @@
       ]
     },
     {
+      "id": "md-to-adf.gfm.rich-inline-as-text",
+      "path": "md-to-adf/gfm/rich-inline-as-text/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "mention",
+        "emoji",
+        "date",
+        "status",
+        "text"
+      ]
+    },
+    {
       "id": "md-to-adf.gfm.table",
       "path": "md-to-adf/gfm/table/case.json",
       "direction": "md-to-adf",
@@ -316,6 +340,18 @@
         "strike",
         "code",
         "link"
+      ]
+    },
+    {
+      "id": "roundtrip.fallback.rich-inline",
+      "path": "roundtrip/fallback/rich-inline/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "mention",
+        "emoji",
+        "date",
+        "status",
+        "richInlineFallback"
       ]
     },
     {

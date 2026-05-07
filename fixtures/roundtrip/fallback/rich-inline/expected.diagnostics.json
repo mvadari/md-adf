@@ -1,0 +1,44 @@
+[
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/0",
+    "message": "ADF mention inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/0/content/0",
+    "message": "ADF mention attrs were dropped in Markdown fallback: id.",
+    "fallback": "drop-attrs"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/2",
+    "message": "ADF emoji inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/4",
+    "message": "ADF date inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/6",
+    "message": "ADF status inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "StatusColorDropped",
+    "path": "/content/0/content/6",
+    "message": "ADF status color was dropped in Markdown fallback.",
+    "fallback": "drop-attrs"
+  }
+]

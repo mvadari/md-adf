@@ -60,10 +60,10 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 ## Current Support
 
 - ADF validation/parsing against a pinned ADF schema.
-- ADF to Markdown for `doc`, `paragraph`, `heading`, `blockquote`, `bulletList`, `orderedList`, `listItem`, `codeBlock`, `rule`, simple GFM tables, task lists, media link/text fallback, `text`, and `hardBreak`.
+- ADF to Markdown for `doc`, `paragraph`, `heading`, `blockquote`, `bulletList`, `orderedList`, `listItem`, `codeBlock`, `rule`, simple GFM tables, task lists, media link/text fallback, rich inline text fallback for `mention`, `emoji`, `date`, and `status`, `text`, and `hardBreak`.
 - Markdown to ADF for paragraphs, headings, block quotes, lists, GFM task lists, code blocks, thematic breaks, GFM tables, text, hard breaks, soft breaks, links, images as link text fallback, and raw HTML as text fallback.
 - Marks for `strong`, `em`, `strike`, `code`, and `link`.
-- Structured diagnostics for invalid ADF roots, unsupported ADF nodes/marks, invalid containers, invalid link marks, complex table omission, task-list fallback, and image/media fallback.
+- Structured diagnostics for invalid ADF roots, unsupported ADF nodes/marks, invalid containers, invalid link marks, complex table omission, task-list fallback, image/media fallback, rich inline fallback, and dropped rich inline attributes.
 
 ## Known Limitations
 
@@ -71,7 +71,8 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 - Media is represented as Markdown link/text fallback; no media URL resolver or image emission exists yet.
 - Markdown to ADF maps images to linked text fallback instead of ADF media nodes.
 - Mixed or complex GFM task lists may fall back to ordinary list items with diagnostics.
-- ADF to Markdown does not yet render mentions, emoji, dates, statuses, panels, expands, cards, layout nodes, extensions, or color/underline/subscript/superscript marks.
+- ADF to Markdown renders mentions, emoji, dates, and statuses as text fallbacks; Markdown to ADF keeps that text as normal text and does not recreate rich inline node IDs.
+- ADF to Markdown does not yet render panels, expands, cards, layout nodes, extensions, or color/underline/subscript/superscript marks.
 - Markdown raw HTML is preserved as text fallback; it is not interpreted into rich ADF.
 - Unsupported ADF nodes are omitted with diagnostics.
 - Markdown parser AST access is not exposed as public API yet; conversion uses real Markdown parsers internally.

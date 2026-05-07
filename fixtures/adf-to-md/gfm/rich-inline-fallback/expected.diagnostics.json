@@ -1,0 +1,79 @@
+[
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/1",
+    "message": "ADF mention inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/0/content/1",
+    "message": "ADF mention attrs were dropped in Markdown fallback: accessLevel, id, userType.",
+    "fallback": "drop-attrs"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/3",
+    "message": "ADF mention inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/0/content/3",
+    "message": "ADF mention attrs were dropped in Markdown fallback: id.",
+    "fallback": "drop-attrs"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/5",
+    "message": "ADF emoji inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/0/content/5",
+    "message": "ADF emoji attrs were dropped in Markdown fallback: id.",
+    "fallback": "drop-attrs"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/7",
+    "message": "ADF date inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/0/content/7",
+    "message": "ADF date attrs were dropped in Markdown fallback: localId.",
+    "fallback": "drop-attrs"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineNodeFallback",
+    "path": "/content/0/content/9",
+    "message": "ADF status inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "StatusColorDropped",
+    "path": "/content/0/content/9",
+    "message": "ADF status color was dropped in Markdown fallback.",
+    "fallback": "drop-attrs"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/0/content/9",
+    "message": "ADF status attrs were dropped in Markdown fallback: style.",
+    "fallback": "drop-attrs"
+  }
+]

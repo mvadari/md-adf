@@ -127,10 +127,19 @@ async function runCase(api, testCase, caseDir) {
     const expected = JSON.parse(
       await readFile(resolve(caseDir, "expected.normalized.adf.json"), "utf8"),
     );
+    const expectedMarkdownDiagnosticsPath = resolve(
+      caseDir,
+      "expected.diagnostics.json",
+    );
+    const expectedMarkdownDiagnostics = existsSync(
+      expectedMarkdownDiagnosticsPath,
+    )
+      ? JSON.parse(await readFile(expectedMarkdownDiagnosticsPath, "utf8"))
+      : [];
     const markdown = api.adfToMarkdown(input, testCase.options);
     assertDiagnosticsEqual(
       markdown.diagnostics,
-      [],
+      expectedMarkdownDiagnostics,
       `${testCase.id} adf-to-md`,
     );
     const adf = api.markdownToAdf(markdown.value, testCase.options);

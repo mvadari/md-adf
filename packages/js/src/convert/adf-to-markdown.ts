@@ -33,6 +33,10 @@ const supportedNodes = new Set([
   "media",
   "text",
   "hardBreak",
+  "mention",
+  "emoji",
+  "date",
+  "status",
 ]);
 
 const markOrder = ["link", "strong", "em", "strike"] as const;
@@ -221,11 +225,7 @@ function renderTable(
           `${path}/content/${rowIndex}/content/${cellIndex}`,
         );
       }
-      if (
-        (cellContent[0]?.content ?? []).some(
-          (inline) => inline.type !== "text",
-        )
-      ) {
+      if ((cellContent[0]?.content ?? []).some(isUnsupportedTableInline)) {
         return unsupported(
           "ADF table cell with unsupported inline content was omitted.",
           `${path}/content/${rowIndex}/content/${cellIndex}`,
@@ -435,6 +435,14 @@ function renderInline(
       );
     case "hardBreak":
       return "\\\n";
+    case "mention":
+      return renderMention(node, diagnostics, path);
+    case "emoji":
+      return renderEmoji(node, diagnostics, path);
+    case "date":
+      return renderDate(node, diagnostics, path);
+    case "status":
+      return renderStatus(node, diagnostics, path);
     default:
       diagnostics.push({
         severity: "warning",
@@ -444,6 +452,126 @@ function renderInline(
       });
       return "";
   }
+}
+
+function isUnsupportedTableInline(node: AdfNode): boolean {
+  return !["text", "mention", "emoji", "date", "status"].includes(node.type);
+}
+
+function renderMention(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const attrs = node.attrs ?? {};
+  const text =
+    nonEmptyString(attrs.text) ??
+    mentionIdFallback(nonEmptyString(attrs.id)) ??
+    "@unknown";
+  warnInlineFallback(diagnostics, path, "mention", "text");
+  warnDroppedAttrs(diagnostics, path, "mention", attrs, ["text"]);
+  return escapeMarkdownText(text);
+}
+
+function renderEmoji(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const attrs = node.attrs ?? {};
+  const text =
+    nonEmptyString(attrs.shortName) ?? nonEmptyString(attrs.text) ?? ":emoji:";
+  warnInlineFallback(diagnostics, path, "emoji", "text");
+  warnDroppedAttrs(diagnostics, path, "emoji", attrs, ["shortName", "text"]);
+  return escapeMarkdownText(text);
+}
+
+function renderDate(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const attrs = node.attrs ?? {};
+  const timestamp = nonEmptyString(attrs.timestamp);
+  const text = timestamp ? dateTextFromTimestamp(timestamp) : "date";
+  warnInlineFallback(diagnostics, path, "date", "text");
+  warnDroppedAttrs(diagnostics, path, "date", attrs, ["timestamp"]);
+  return escapeMarkdownText(text);
+}
+
+function renderStatus(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const attrs = node.attrs ?? {};
+  const text = nonEmptyString(attrs.text) ?? "status";
+  warnInlineFallback(diagnostics, path, "status", "text");
+  if (attrs.color !== undefined) {
+    diagnostics.push({
+      severity: "warning",
+      code: "StatusColorDropped",
+      path,
+      message: "ADF status color was dropped in Markdown fallback.",
+      fallback: "drop-attrs",
+    });
+  }
+  warnDroppedAttrs(diagnostics, path, "status", attrs, ["text", "color"]);
+  return escapeMarkdownText(text);
+}
+
+function warnInlineFallback(
+  diagnostics: Diagnostic[],
+  path: string,
+  nodeType: string,
+  fallback: string,
+): void {
+  diagnostics.push({
+    severity: "warning",
+    code: "RichInlineNodeFallback",
+    path,
+    message: `ADF ${nodeType} inline node was rendered as Markdown text fallback.`,
+    fallback,
+  });
+}
+
+function warnDroppedAttrs(
+  diagnostics: Diagnostic[],
+  path: string,
+  nodeType: string,
+  attrs: Record<string, unknown>,
+  renderedAttrs: string[],
+): void {
+  const droppedAttrs = Object.keys(attrs).filter(
+    (attr) => !renderedAttrs.includes(attr),
+  );
+  if (droppedAttrs.length === 0) return;
+
+  diagnostics.push({
+    severity: "warning",
+    code: "RichInlineAttrsDropped",
+    path,
+    message: `ADF ${nodeType} attrs were dropped in Markdown fallback: ${droppedAttrs.sort().join(", ")}.`,
+    fallback: "drop-attrs",
+  });
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
+function mentionIdFallback(id: string | undefined): string | undefined {
+  if (!id) return undefined;
+  return id.startsWith("@") ? id : `@${id}`;
+}
+
+function dateTextFromTimestamp(timestamp: string): string {
+  const milliseconds = Number(timestamp);
+  if (Number.isFinite(milliseconds)) {
+    const date = new Date(milliseconds);
+    if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10);
+  }
+  return timestamp;
 }
 
 function renderMarkedText(

@@ -8,9 +8,16 @@
   },
   {
     "severity": "warning",
-    "code": "UnsupportedComplexTable",
-    "path": "/content/1/content/1/content/0",
-    "message": "ADF table cell with unsupported inline content was omitted.",
-    "fallback": "omit"
+    "code": "RichInlineNodeFallback",
+    "path": "/content/1/content/1/content/0/content/0/content/0",
+    "message": "ADF emoji inline node was rendered as Markdown text fallback.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "RichInlineAttrsDropped",
+    "path": "/content/1/content/1/content/0/content/0/content/0",
+    "message": "ADF emoji attrs were dropped in Markdown fallback: id.",
+    "fallback": "drop-attrs"
   }
 ]

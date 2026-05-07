@@ -31,6 +31,10 @@ SUPPORTED_NODES = {
     "media",
     "text",
     "hardBreak",
+    "mention",
+    "emoji",
+    "date",
+    "status",
 }
 MARK_ORDER = ("link", "strong", "em", "strike")
 SUPPORTED_MARKS = {"strong", "em", "strike", "code", "link"}
@@ -197,7 +201,7 @@ def render_table(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
                 return unsupported("ADF table cell with block content was omitted.", cell_path)
 
             inline_content = cell_content[0].get("content", []) if cell_content else []
-            if any(inline.get("type") != "text" for inline in inline_content):
+            if any(_is_unsupported_table_inline(inline) for inline in inline_content):
                 return unsupported(
                     "ADF table cell with unsupported inline content was omitted.",
                     cell_path,
@@ -391,6 +395,18 @@ def render_inline(
     if node_type == "hardBreak":
         return "\\\n"
 
+    if node_type == "mention":
+        return render_mention(node, diagnostics, path)
+
+    if node_type == "emoji":
+        return render_emoji(node, diagnostics, path)
+
+    if node_type == "date":
+        return render_date(node, diagnostics, path)
+
+    if node_type == "status":
+        return render_status(node, diagnostics, path)
+
     diagnostics.append(
         Diagnostic(
             severity="warning",
@@ -400,6 +416,118 @@ def render_inline(
         )
     )
     return ""
+
+
+def _is_unsupported_table_inline(node: AdfNode) -> bool:
+    return node.get("type") not in {"text", "mention", "emoji", "date", "status"}
+
+
+def render_mention(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    attrs = _attrs(node)
+    text = (
+        _non_empty_string(attrs.get("text"))
+        or _mention_id_fallback(_non_empty_string(attrs.get("id")))
+        or "@unknown"
+    )
+    _warn_inline_fallback(diagnostics, path, "mention", "text")
+    _warn_dropped_attrs(diagnostics, path, "mention", attrs, ["text"])
+    return escape_markdown_text(text)
+
+
+def render_emoji(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    attrs = _attrs(node)
+    text = _non_empty_string(attrs.get("shortName")) or _non_empty_string(attrs.get("text")) or ":emoji:"
+    _warn_inline_fallback(diagnostics, path, "emoji", "text")
+    _warn_dropped_attrs(diagnostics, path, "emoji", attrs, ["shortName", "text"])
+    return escape_markdown_text(text)
+
+
+def render_date(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    attrs = _attrs(node)
+    timestamp = _non_empty_string(attrs.get("timestamp"))
+    text = _date_text_from_timestamp(timestamp) if timestamp else "date"
+    _warn_inline_fallback(diagnostics, path, "date", "text")
+    _warn_dropped_attrs(diagnostics, path, "date", attrs, ["timestamp"])
+    return escape_markdown_text(text)
+
+
+def render_status(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    attrs = _attrs(node)
+    text = _non_empty_string(attrs.get("text")) or "status"
+    _warn_inline_fallback(diagnostics, path, "status", "text")
+    if "color" in attrs:
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="StatusColorDropped",
+                path=path,
+                message="ADF status color was dropped in Markdown fallback.",
+                fallback="drop-attrs",
+            )
+        )
+    _warn_dropped_attrs(diagnostics, path, "status", attrs, ["text", "color"])
+    return escape_markdown_text(text)
+
+
+def _warn_inline_fallback(
+    diagnostics: list[Diagnostic], path: str, node_type: str, fallback: str
+) -> None:
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="RichInlineNodeFallback",
+            path=path,
+            message=f"ADF {node_type} inline node was rendered as Markdown text fallback.",
+            fallback=fallback,
+        )
+    )
+
+
+def _warn_dropped_attrs(
+    diagnostics: list[Diagnostic],
+    path: str,
+    node_type: str,
+    attrs: dict[str, Any],
+    rendered_attrs: list[str],
+) -> None:
+    dropped_attrs = sorted(attr for attr in attrs if attr not in rendered_attrs)
+    if not dropped_attrs:
+        return
+
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="RichInlineAttrsDropped",
+            path=path,
+            message=(
+                f"ADF {node_type} attrs were dropped in Markdown fallback: "
+                f"{', '.join(dropped_attrs)}."
+            ),
+            fallback="drop-attrs",
+        )
+    )
+
+
+def _non_empty_string(value: Any) -> str | None:
+    return value if isinstance(value, str) and len(value) > 0 else None
+
+
+def _mention_id_fallback(value: str | None) -> str | None:
+    if not value:
+        return None
+    return value if value.startswith("@") else f"@{value}"
+
+
+def _date_text_from_timestamp(timestamp: str) -> str:
+    milliseconds = _to_number(timestamp, float("nan"))
+    if milliseconds == milliseconds and milliseconds not in {float("inf"), float("-inf")}:
+        from datetime import datetime, timezone
+
+        try:
+            return datetime.fromtimestamp(milliseconds / 1000, tz=timezone.utc).date().isoformat()
+        except (OSError, OverflowError, ValueError):
+            pass
+    return timestamp
 
 
 def render_marked_text(

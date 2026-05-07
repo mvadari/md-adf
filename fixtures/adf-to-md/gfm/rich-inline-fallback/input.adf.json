@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Hello "
+        },
+        {
+          "type": "mention",
+          "attrs": {
+            "id": "ari:cloud:identity::user/123",
+            "text": "@Ada",
+            "accessLevel": "CONTAINER",
+            "userType": "DEFAULT"
+          }
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "mention",
+          "attrs": {
+            "id": "fallback-user"
+          }
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "emoji",
+          "attrs": {
+            "shortName": ":rocket:",
+            "id": "1f680",
+            "text": "rocket"
+          }
+        },
+        {
+          "type": "text",
+          "text": " due "
+        },
+        {
+          "type": "date",
+          "attrs": {
+            "timestamp": "1704067200000",
+            "localId": "date-1"
+          }
+        },
+        {
+          "type": "text",
+          "text": " "
+        },
+        {
+          "type": "status",
+          "attrs": {
+            "text": "Blocked",
+            "color": "red",
+            "style": "bold"
+          }
+        }
+      ]
+    }
+  ]
+}

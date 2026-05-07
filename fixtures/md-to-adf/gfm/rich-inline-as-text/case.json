@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.rich-inline-as-text",
+  "direction": "md-to-adf",
+  "description": "Keeps rich inline fallback Markdown as plain text instead of inventing ADF metadata.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["mention", "emoji", "date", "status", "text"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}
