@@ -59,11 +59,22 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 
 ## Current Support
 
-ADF to Markdown supports Phase 1 blocks and marks plus simple GFM table rendering, task lists, and media link/text fallback.
+- ADF validation/parsing against a pinned ADF schema.
+- ADF to Markdown for `doc`, `paragraph`, `heading`, `blockquote`, `bulletList`, `orderedList`, `listItem`, `codeBlock`, `rule`, simple GFM tables, task lists, media link/text fallback, `text`, and `hardBreak`.
+- Markdown to ADF for paragraphs, headings, block quotes, lists, GFM task lists, code blocks, thematic breaks, GFM tables, text, hard breaks, soft breaks, links, images as link text fallback, and raw HTML as text fallback.
+- Marks for `strong`, `em`, `strike`, `code`, and `link`.
+- Structured diagnostics for invalid ADF roots, unsupported ADF nodes/marks, invalid containers, invalid link marks, complex table omission, task-list fallback, and image/media fallback.
 
-Markdown to ADF supports the same Phase 1 surface plus GFM table input, simple GFM task lists, soft breaks as spaces, raw HTML as text fallback, and images as linked text fallback with diagnostics.
+## Known Limitations
 
-Markdown parser AST access is not exposed as public API yet. Conversion uses real Markdown parsers internally, but the supported public surface is conversion to and from ADF.
+- ADF to Markdown only renders simple rectangular tables as GFM pipe tables; complex tables are omitted with diagnostics.
+- Media is represented as Markdown link/text fallback; no media URL resolver or image emission exists yet.
+- Markdown to ADF maps images to linked text fallback instead of ADF media nodes.
+- Mixed or complex GFM task lists may fall back to ordinary list items with diagnostics.
+- ADF to Markdown does not yet render mentions, emoji, dates, statuses, panels, expands, cards, layout nodes, extensions, or color/underline/subscript/superscript marks.
+- Markdown raw HTML is preserved as text fallback; it is not interpreted into rich ADF.
+- Unsupported ADF nodes are omitted with diagnostics.
+- Markdown parser AST access is not exposed as public API yet; conversion uses real Markdown parsers internally.
 
 ## Development
 
@@ -72,6 +83,7 @@ poetry -C packages/python run python ../../tools/conformance/run-python.py
 poetry -C packages/python run pytest
 poetry -C packages/python run ruff check --config ../../pyproject.toml src tests ../../tools/conformance/run-python.py
 poetry -C packages/python run mypy --config-file ../../pyproject.toml src tests ../../tools/conformance/run-python.py
+npm run test:packages
 ```
 
 Shared conformance fixtures live in `../../fixtures` and are run by the root `just test-python` command.
