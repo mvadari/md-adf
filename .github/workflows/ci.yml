@@ -8,6 +8,7 @@ on:
 
 env:
   POETRY_VERSION: "2.1.1"
+  PYTHON_VERSION: "3.12"
 
 jobs:
   lint:
@@ -24,13 +25,23 @@ jobs:
           node-version: 26
           cache: npm
 
+      - name: Load cached .local
+        id: cache-poetry
+        uses: actions/cache@v5
+        with:
+          path: /home/runner/.local
+          key: dotlocal-${{ env.POETRY_VERSION }}
+
       - name: Install Poetry
-        run: pipx install "poetry==$POETRY_VERSION"
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL https://install.python-poetry.org/ | python - --version ${{ env.POETRY_VERSION }}
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: poetry
           cache-dependency-path: packages/python/poetry.lock
 
@@ -83,13 +94,23 @@ jobs:
           node-version: 26
           cache: npm
 
+      - name: Load cached .local
+        id: cache-poetry
+        uses: actions/cache@v5
+        with:
+          path: /home/runner/.local
+          key: dotlocal-${{ env.POETRY_VERSION }}
+
       - name: Install Poetry
-        run: pipx install "poetry==$POETRY_VERSION"
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL https://install.python-poetry.org/ | python - --version ${{ env.POETRY_VERSION }}
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: poetry
           cache-dependency-path: packages/python/poetry.lock
 
@@ -126,13 +147,23 @@ jobs:
           node-version: 26
           cache: npm
 
+      - name: Load cached .local
+        id: cache-poetry
+        uses: actions/cache@v5
+        with:
+          path: /home/runner/.local
+          key: dotlocal-${{ env.POETRY_VERSION }}
+
       - name: Install Poetry
-        run: pipx install "poetry==$POETRY_VERSION"
+        if: steps.cache-poetry.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL https://install.python-poetry.org/ | python - --version ${{ env.POETRY_VERSION }}
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: poetry
           cache-dependency-path: packages/python/poetry.lock
 
