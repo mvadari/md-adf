@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedPanel",
+    "path": "/content/0",
+    "message": "ADF panel was rendered as a Markdown blockquote fallback.",
+    "fallback": "blockquote"
+  }
+]

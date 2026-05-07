@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.card-no-url-fallback",
+  "direction": "adf-to-md",
+  "description": "Renders Atlassian card nodes without URLs as text fallbacks.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["blockCard", "inlineCard", "cardFallback"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

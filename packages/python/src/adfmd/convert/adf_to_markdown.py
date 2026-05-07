@@ -26,11 +26,17 @@ SUPPORTED_NODES = {
     "rule",
     "table",
     "taskList",
+    "panel",
+    "expand",
+    "nestedExpand",
+    "blockCard",
+    "embedCard",
     "mediaGroup",
     "mediaSingle",
     "media",
     "text",
     "hardBreak",
+    "inlineCard",
     "mention",
     "emoji",
     "date",
@@ -129,6 +135,15 @@ def render_block(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
     if node_type == "taskList":
         return render_task_list(node, diagnostics, path)
 
+    if node_type == "panel":
+        return render_panel(node, diagnostics, path)
+
+    if node_type in {"expand", "nestedExpand"}:
+        return render_expand(node, diagnostics, path)
+
+    if node_type in {"blockCard", "embedCard"}:
+        return render_card(node, diagnostics, path)
+
     if node_type == "mediaGroup":
         return render_media_group(node, diagnostics, path)
 
@@ -147,6 +162,67 @@ def render_block(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
         )
     )
     return ""
+
+
+def render_panel(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="UnsupportedPanel",
+            path=path,
+            message="ADF panel was rendered as a Markdown blockquote fallback.",
+            fallback="blockquote",
+        )
+    )
+    return prefix_lines(
+        render_blocks(node.get("content", []), diagnostics, f"{path}/content"),
+        "> ",
+    )
+
+
+def render_expand(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="UnsupportedExpand",
+            path=path,
+            message="ADF expand was flattened into Markdown content.",
+            fallback="flatten",
+        )
+    )
+    title = _non_empty_string(_attrs(node).get("title")) or "Expand"
+    summary = f"### {escape_markdown_text(title, True)}"
+    content = render_blocks(node.get("content", []), diagnostics, f"{path}/content")
+    return "\n\n".join(block for block in [summary, content] if len(block) > 0)
+
+
+def render_card(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    attrs = _attrs(node)
+    url = _card_url(attrs)
+    label = _card_label(attrs) or url or "card"
+
+    if url:
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="UnsupportedCard",
+                path=path,
+                message="ADF card was rendered as a Markdown link fallback.",
+                fallback="link",
+            )
+        )
+        return f"[{escape_markdown_text(label)}]({escape_link_destination(url)})"
+
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="UnsupportedCard",
+            path=path,
+            message="ADF card without a URL was rendered as text.",
+            fallback="text",
+        )
+    )
+    return escape_markdown_text(label)
 
 
 def render_table(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
@@ -407,6 +483,9 @@ def render_inline(
     if node_type == "status":
         return render_status(node, diagnostics, path)
 
+    if node_type == "inlineCard":
+        return render_card(node, diagnostics, path)
+
     diagnostics.append(
         Diagnostic(
             severity="warning",
@@ -528,6 +607,24 @@ def _date_text_from_timestamp(timestamp: str) -> str:
         except (OSError, OverflowError, ValueError):
             pass
     return timestamp
+
+
+def _card_url(attrs: dict[str, Any]) -> str | None:
+    data = attrs.get("data")
+    data_attrs = data if isinstance(data, dict) else {}
+    return _non_empty_string(attrs.get("url")) or _non_empty_string(data_attrs.get("url"))
+
+
+def _card_label(attrs: dict[str, Any]) -> str | None:
+    data = attrs.get("data")
+    data_attrs = data if isinstance(data, dict) else {}
+    return (
+        _non_empty_string(attrs.get("title"))
+        or _non_empty_string(attrs.get("text"))
+        or _non_empty_string(data_attrs.get("title"))
+        or _non_empty_string(data_attrs.get("name"))
+        or _non_empty_string(data_attrs.get("text"))
+    )
 
 
 def render_marked_text(

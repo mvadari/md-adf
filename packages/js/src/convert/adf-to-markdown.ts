@@ -28,11 +28,17 @@ const supportedNodes = new Set([
   "rule",
   "table",
   "taskList",
+  "panel",
+  "expand",
+  "nestedExpand",
+  "blockCard",
+  "embedCard",
   "mediaGroup",
   "mediaSingle",
   "media",
   "text",
   "hardBreak",
+  "inlineCard",
   "mention",
   "emoji",
   "date",
@@ -137,6 +143,14 @@ function renderBlock(
       return renderTable(node, diagnostics, path);
     case "taskList":
       return renderTaskList(node, diagnostics, path);
+    case "panel":
+      return renderPanel(node, diagnostics, path);
+    case "expand":
+    case "nestedExpand":
+      return renderExpand(node, diagnostics, path);
+    case "blockCard":
+    case "embedCard":
+      return renderCard(node, diagnostics, path);
     case "mediaGroup":
       return renderMediaGroup(node, diagnostics, path);
     case "mediaSingle":
@@ -152,6 +166,76 @@ function renderBlock(
       });
       return "";
   }
+}
+
+function renderPanel(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  diagnostics.push({
+    severity: "warning",
+    code: "UnsupportedPanel",
+    path,
+    message: "ADF panel was rendered as a Markdown blockquote fallback.",
+    fallback: "blockquote",
+  });
+  return prefixLines(
+    renderBlocks(node.content ?? [], diagnostics, `${path}/content`),
+    "> ",
+  );
+}
+
+function renderExpand(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  diagnostics.push({
+    severity: "warning",
+    code: "UnsupportedExpand",
+    path,
+    message: "ADF expand was flattened into Markdown content.",
+    fallback: "flatten",
+  });
+  const title = nonEmptyString(node.attrs?.title) ?? "Expand";
+  const summary = `### ${escapeMarkdownText(title, true)}`;
+  const content = renderBlocks(
+    node.content ?? [],
+    diagnostics,
+    `${path}/content`,
+  );
+  return [summary, content].filter((block) => block.length > 0).join("\n\n");
+}
+
+function renderCard(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const attrs = node.attrs ?? {};
+  const url = cardUrl(attrs);
+  const label = cardLabel(attrs) ?? url ?? "card";
+
+  if (url) {
+    diagnostics.push({
+      severity: "warning",
+      code: "UnsupportedCard",
+      path,
+      message: "ADF card was rendered as a Markdown link fallback.",
+      fallback: "link",
+    });
+    return `[${escapeMarkdownText(label)}](${escapeLinkDestination(url)})`;
+  }
+
+  diagnostics.push({
+    severity: "warning",
+    code: "UnsupportedCard",
+    path,
+    message: "ADF card without a URL was rendered as text.",
+    fallback: "text",
+  });
+  return escapeMarkdownText(label);
 }
 
 function renderTable(
@@ -443,6 +527,8 @@ function renderInline(
       return renderDate(node, diagnostics, path);
     case "status":
       return renderStatus(node, diagnostics, path);
+    case "inlineCard":
+      return renderCard(node, diagnostics, path);
     default:
       diagnostics.push({
         severity: "warning",
@@ -572,6 +658,22 @@ function dateTextFromTimestamp(timestamp: string): string {
     if (!Number.isNaN(date.getTime())) return date.toISOString().slice(0, 10);
   }
   return timestamp;
+}
+
+function cardUrl(attrs: Record<string, unknown>): string | undefined {
+  const data = attrs.data as Record<string, unknown> | undefined;
+  return nonEmptyString(attrs.url) ?? nonEmptyString(data?.url);
+}
+
+function cardLabel(attrs: Record<string, unknown>): string | undefined {
+  const data = attrs.data as Record<string, unknown> | undefined;
+  return (
+    nonEmptyString(attrs.title) ??
+    nonEmptyString(attrs.text) ??
+    nonEmptyString(data?.title) ??
+    nonEmptyString(data?.name) ??
+    nonEmptyString(data?.text)
+  );
 }
 
 function renderMarkedText(

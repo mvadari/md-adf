@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.expand-fallback",
+  "direction": "adf-to-md",
+  "description": "Renders an Atlassian expand as a summary heading plus flattened content.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["expand", "expandFallback"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

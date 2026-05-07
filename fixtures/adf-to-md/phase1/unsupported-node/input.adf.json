@@ -12,21 +12,11 @@
       ]
     },
     {
-      "type": "panel",
+      "type": "extension",
       "attrs": {
-        "panelType": "info"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [
-            {
-              "type": "text",
-              "text": "Unsupported panel."
-            }
-          ]
-        }
-      ]
+        "extensionType": "com.example",
+        "extensionKey": "unsupported"
+      }
     },
     {
       "type": "paragraph",

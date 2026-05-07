@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedExpand",
+    "path": "/content/0",
+    "message": "ADF expand was flattened into Markdown content.",
+    "fallback": "flatten"
+  }
+]

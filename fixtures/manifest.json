@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-07T17:27:38.168Z",
+  "generatedAt": "2026-05-07T17:34:32.208Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -9,6 +9,27 @@
       "features": [
         "paragraph",
         "text"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.card-no-url-fallback",
+      "path": "adf-to-md/gfm/card-no-url-fallback/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "blockCard",
+        "inlineCard",
+        "cardFallback"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.card-url-fallback",
+      "path": "adf-to-md/gfm/card-url-fallback/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "blockCard",
+        "embedCard",
+        "inlineCard",
+        "cardFallback"
       ]
     },
     {
@@ -22,6 +43,15 @@
         "tableCell",
         "rowspan",
         "unsupportedComplexTable"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.expand-fallback",
+      "path": "adf-to-md/gfm/expand-fallback/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "expand",
+        "expandFallback"
       ]
     },
     {
@@ -50,6 +80,16 @@
       "features": [
         "mediaSingle",
         "media"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.panel-fallback",
+      "path": "adf-to-md/gfm/panel-fallback/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "panel",
+        "panelFallback",
+        "blockquote"
       ]
     },
     {

@@ -1,0 +1,16 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedCard",
+    "path": "/content/0",
+    "message": "ADF card without a URL was rendered as text.",
+    "fallback": "text"
+  },
+  {
+    "severity": "warning",
+    "code": "UnsupportedCard",
+    "path": "/content/1/content/1",
+    "message": "ADF card without a URL was rendered as text.",
+    "fallback": "text"
+  }
+]

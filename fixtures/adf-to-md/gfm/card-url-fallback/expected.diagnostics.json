@@ -1,0 +1,23 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedCard",
+    "path": "/content/0",
+    "message": "ADF card was rendered as a Markdown link fallback.",
+    "fallback": "link"
+  },
+  {
+    "severity": "warning",
+    "code": "UnsupportedCard",
+    "path": "/content/1",
+    "message": "ADF card was rendered as a Markdown link fallback.",
+    "fallback": "link"
+  },
+  {
+    "severity": "warning",
+    "code": "UnsupportedCard",
+    "path": "/content/2/content/1",
+    "message": "ADF card was rendered as a Markdown link fallback.",
+    "fallback": "link"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.panel-fallback",
+  "direction": "adf-to-md",
+  "description": "Renders an Atlassian panel as a Markdown blockquote fallback.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["panel", "panelFallback", "blockquote"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

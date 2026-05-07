@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "blockCard",
+      "attrs": {
+        "data": {
+          "title": "Project card"
+        }
+      }
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Open "
+        },
+        {
+          "type": "inlineCard",
+          "attrs": {
+            "data": {
+              "title": "Mentioned card"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
