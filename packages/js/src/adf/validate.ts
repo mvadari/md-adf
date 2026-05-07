@@ -26,7 +26,7 @@ export function validateAdf(value: unknown): ValidationResult {
   } catch (error) {
     return {
       valid: false,
-      errors: [error instanceof Error ? error.message : "Invalid ADF."]
+      errors: [error instanceof Error ? error.message : "Invalid ADF."],
     };
   }
 }

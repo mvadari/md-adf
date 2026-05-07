@@ -9,10 +9,60 @@
       "features": ["paragraph", "text"]
     },
     {
+      "id": "adf-to-md.phase1.core",
+      "path": "adf-to-md/phase1/core/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "heading",
+        "paragraph",
+        "blockquote",
+        "bulletList",
+        "orderedList",
+        "listItem",
+        "codeBlock",
+        "rule",
+        "text",
+        "hardBreak",
+        "strong",
+        "em",
+        "strike",
+        "code",
+        "link"
+      ]
+    },
+    {
+      "id": "adf-to-md.phase1.escaping",
+      "path": "adf-to-md/phase1/escaping/case.json",
+      "direction": "adf-to-md",
+      "features": ["paragraph", "text"]
+    },
+    {
       "id": "md-to-adf.basic.paragraph",
       "path": "md-to-adf/basic/paragraph/case.json",
       "direction": "md-to-adf",
       "features": ["paragraph", "text"]
+    },
+    {
+      "id": "md-to-adf.phase1.core",
+      "path": "md-to-adf/phase1/core/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "heading",
+        "paragraph",
+        "blockquote",
+        "bulletList",
+        "orderedList",
+        "listItem",
+        "codeBlock",
+        "rule",
+        "text",
+        "hardBreak",
+        "strong",
+        "em",
+        "strike",
+        "code",
+        "link"
+      ]
     },
     {
       "id": "roundtrip.supported.emphasis",

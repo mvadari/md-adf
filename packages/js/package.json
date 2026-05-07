@@ -22,9 +22,9 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "format": "prettier --check .",
+    "format": "prettier --check \"{bin,src,test}/**/*.{ts,mjs}\" package.json README.md tsconfig.json",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "node test/conformance.test.mjs"
+    "test": "npm run build && node test/conformance.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

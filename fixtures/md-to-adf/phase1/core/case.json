@@ -1,0 +1,31 @@
+{
+  "id": "md-to-adf.phase1.core",
+  "direction": "md-to-adf",
+  "description": "Converts Phase 1 Markdown block and inline syntax to ADF.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "heading",
+    "paragraph",
+    "blockquote",
+    "bulletList",
+    "orderedList",
+    "listItem",
+    "codeBlock",
+    "rule",
+    "text",
+    "hardBreak",
+    "strong",
+    "em",
+    "strike",
+    "code",
+    "link"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {
+    "python": "Conversion logic is not implemented in the bootstrap skeleton."
+  }
+}

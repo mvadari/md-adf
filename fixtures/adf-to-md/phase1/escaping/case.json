@@ -1,7 +1,7 @@
 {
-  "id": "md-to-adf.basic.paragraph",
-  "direction": "md-to-adf",
-  "description": "Converts a simple Markdown paragraph to ADF.",
+  "id": "adf-to-md.phase1.escaping",
+  "direction": "adf-to-md",
+  "description": "Escapes Markdown punctuation in Phase 1 text output.",
   "profile": "portableMarkdown",
   "options": {
     "markdownDialect": "gfm"
