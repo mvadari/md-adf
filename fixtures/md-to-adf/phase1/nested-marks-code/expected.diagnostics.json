@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "severity": "warning",
+    "code": "CodeMarkDropsOtherMarks",
+    "message": "ADF code text cannot contain non-code formatting marks; non-code marks were ignored.",
+    "fallback": "drop-marks"
+  }
+]

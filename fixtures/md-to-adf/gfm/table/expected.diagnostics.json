@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedTableAlignment",
+    "message": "Markdown table column alignment is not representable in ADF and was omitted.",
+    "path": "/content/0",
+    "fallback": "omit"
+  }
+]

@@ -4,9 +4,6 @@
   "content": [
     {
       "type": "table",
-      "attrs": {
-        "columnAlignments": [null, "right"]
-      },
       "content": [
         {
           "type": "tableRow",

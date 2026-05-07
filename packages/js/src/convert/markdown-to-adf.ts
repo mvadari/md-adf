@@ -34,7 +34,11 @@ export function markdownToAdf(
   resolveConversionOptions(options);
   const diagnostics: Diagnostic[] = [];
   const tree = markdownParser.parse(markdown.replace(/\r\n?/g, "\n"));
-  const content = blockChildren((tree as MarkdownNode).children ?? []);
+  const content = blockChildren(
+    (tree as MarkdownNode).children ?? [],
+    diagnostics,
+    "/content",
+  );
 
   return {
     value: {
@@ -46,17 +50,27 @@ export function markdownToAdf(
   };
 }
 
-function blockChildren(nodes: MarkdownNode[]): AdfNode[] {
-  return nodes.flatMap((node) => blockNode(node));
+function blockChildren(
+  nodes: MarkdownNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode[] {
+  return nodes.flatMap((node, index) =>
+    blockNode(node, diagnostics, `${path}/${index}`),
+  );
 }
 
-function blockNode(node: MarkdownNode): AdfNode[] {
+function blockNode(
+  node: MarkdownNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode[] {
   switch (node.type) {
     case "paragraph":
       return [
         {
           type: "paragraph",
-          content: inlineChildren(node.children ?? []),
+          content: inlineChildren(node.children ?? [], diagnostics),
         },
       ];
     case "heading":
@@ -64,7 +78,7 @@ function blockNode(node: MarkdownNode): AdfNode[] {
         {
           type: "heading",
           attrs: { level: Math.min(6, Math.max(1, node.depth ?? 1)) },
-          content: inlineChildren(node.children ?? []),
+          content: inlineChildren(node.children ?? [], diagnostics),
         },
       ];
     case "thematicBreak":
@@ -73,15 +87,19 @@ function blockNode(node: MarkdownNode): AdfNode[] {
       return [
         {
           type: "blockquote",
-          content: blockChildren(node.children ?? []),
+          content: blockChildren(
+            node.children ?? [],
+            diagnostics,
+            `${path}/content`,
+          ),
         },
       ];
     case "list":
-      return [listNode(node)];
+      return [listNode(node, diagnostics, path)];
     case "code":
       return [codeBlockNode(node)];
     case "table":
-      return [tableNode(node)];
+      return [tableNode(node, diagnostics, path)];
     case "html":
       return paragraphFromText(node.value ?? "");
     default:
@@ -89,12 +107,18 @@ function blockNode(node: MarkdownNode): AdfNode[] {
   }
 }
 
-function listNode(node: MarkdownNode): AdfNode {
+function listNode(
+  node: MarkdownNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode {
   const list: AdfNode = {
     type: node.ordered ? "orderedList" : "bulletList",
     content: (node.children ?? [])
       .filter((child) => child.type === "listItem")
-      .map((child) => listItemNode(child)),
+      .map((child, index) =>
+        listItemNode(child, diagnostics, `${path}/content/${index}`),
+      ),
   };
   if (node.ordered && node.start && node.start !== 1) {
     list.attrs = { order: node.start };
@@ -102,8 +126,16 @@ function listNode(node: MarkdownNode): AdfNode {
   return list;
 }
 
-function listItemNode(node: MarkdownNode): AdfNode {
-  const content = blockChildren(node.children ?? []);
+function listItemNode(
+  node: MarkdownNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode {
+  const content = blockChildren(
+    node.children ?? [],
+    diagnostics,
+    `${path}/content`,
+  );
   return { type: "listItem", content };
 }
 
@@ -116,7 +148,11 @@ function codeBlockNode(node: MarkdownNode): AdfNode {
   return codeBlock;
 }
 
-function tableNode(node: MarkdownNode): AdfNode {
+function tableNode(
+  node: MarkdownNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode {
   const rows = node.children ?? [];
   const table: AdfNode = {
     type: "table",
@@ -127,14 +163,21 @@ function tableNode(node: MarkdownNode): AdfNode {
         content: [
           {
             type: "paragraph",
-            content: inlineChildren(cell.children ?? []),
+            content: inlineChildren(cell.children ?? [], diagnostics),
           },
         ],
       })),
     })),
   };
   if (node.align && node.align.some((align) => align !== null)) {
-    table.attrs = { columnAlignments: node.align };
+    diagnostics.push({
+      severity: "warning",
+      code: "UnsupportedTableAlignment",
+      path,
+      message:
+        "Markdown table column alignment is not representable in ADF and was omitted.",
+      fallback: "omit",
+    });
   }
   return table;
 }
@@ -152,11 +195,12 @@ function paragraphFromText(text: string): AdfNode[] {
 
 function inlineChildren(
   nodes: MarkdownNode[],
+  diagnostics: Diagnostic[],
   marks: Array<Record<string, unknown>> = [],
 ): AdfNode[] {
   const output: AdfNode[] = [];
   for (const node of nodes) {
-    for (const child of inlineNode(node, marks)) {
+    for (const child of inlineNode(node, marks, diagnostics)) {
       appendInline(output, child);
     }
   }
@@ -166,28 +210,32 @@ function inlineChildren(
 function inlineNode(
   node: MarkdownNode,
   marks: Array<Record<string, unknown>>,
+  diagnostics: Diagnostic[],
 ): AdfNode[] {
   switch (node.type) {
     case "text":
       return textNode((node.value ?? "").replace(/\n/g, " "), marks);
     case "emphasis":
-      return inlineChildren(node.children ?? [], [...marks, { type: "em" }]);
+      return inlineChildren(node.children ?? [], diagnostics, [
+        ...marks,
+        { type: "em" },
+      ]);
     case "strong":
-      return inlineChildren(node.children ?? [], [
+      return inlineChildren(node.children ?? [], diagnostics, [
         ...marks,
         { type: "strong" },
       ]);
     case "delete":
-      return inlineChildren(node.children ?? [], [
+      return inlineChildren(node.children ?? [], diagnostics, [
         ...marks,
         { type: "strike" },
       ]);
     case "inlineCode":
-      return textNode(node.value ?? "", [...marks, { type: "code" }]);
+      return textNode(node.value ?? "", codeMarks(marks, diagnostics));
     case "link": {
       const attrs: Record<string, unknown> = { href: node.url ?? "" };
       if (node.title) attrs.title = node.title;
-      return inlineChildren(node.children ?? [], [
+      return inlineChildren(node.children ?? [], diagnostics, [
         ...marks,
         { type: "link", attrs },
       ]);
@@ -217,6 +265,23 @@ function textNode(
   const node: AdfNode = { type: "text", text };
   if (marks.length > 0) node.marks = marks;
   return [node];
+}
+
+function codeMarks(
+  marks: Array<Record<string, unknown>>,
+  diagnostics: Diagnostic[],
+): Array<Record<string, unknown>> {
+  const compatibleMarks = marks.filter((mark) => mark.type === "link");
+  if (compatibleMarks.length !== marks.length) {
+    diagnostics.push({
+      severity: "warning",
+      code: "CodeMarkDropsOtherMarks",
+      message:
+        "ADF code text cannot contain non-code formatting marks; non-code marks were ignored.",
+      fallback: "drop-marks",
+    });
+  }
+  return [...compatibleMarks, { type: "code" }];
 }
 
 function appendInline(nodes: AdfNode[], node: AdfNode): void {

@@ -11,7 +11,7 @@ def main() -> int:
     root = Path(__file__).parents[2]
     sys.path.insert(0, str(root / "packages" / "python" / "src"))
 
-    from adfmd import adf_to_markdown, markdown_to_adf
+    from adfmd import adf_to_markdown, markdown_to_adf, validate_adf
 
     manifest = json.loads((root / "fixtures" / "manifest.json").read_text(encoding="utf-8"))
 
@@ -64,6 +64,7 @@ def main() -> int:
                     _diagnostic_to_json(diagnostic) for diagnostic in adf_result.diagnostics
                 ]
 
+                _assert_valid_adf(adf_result.value, test_case["id"], validate_adf)
                 _assert_adf_equal(adf_result.value, expected_adf, test_case["id"])
                 _assert_diagnostics_equal(
                     actual_diagnostics, expected_diagnostics, test_case["id"]
@@ -86,6 +87,7 @@ def main() -> int:
                     [],
                     f"{test_case['id']} md-to-adf",
                 )
+                _assert_valid_adf(adf.value, f"{test_case['id']} roundtrip", validate_adf)
                 _assert_adf_equal(adf.value, expected_adf, test_case["id"])
             else:
                 raise AssertionError(f"Unknown direction {test_case['direction']}")
@@ -143,6 +145,14 @@ def _assert_diagnostics_equal(actual: Any, expected: Any, test_id: str) -> None:
             f"{test_id} diagnostics mismatch:\n"
             f"expected: {normalized_expected!r}\n"
             f"actual:   {normalized_actual!r}"
+        )
+
+
+def _assert_valid_adf(actual: Any, test_id: str, validate_adf: Any) -> None:
+    validation = validate_adf(actual)
+    if not validation.valid:
+        raise AssertionError(
+            f"{test_id} produced invalid ADF: {'; '.join(validation.errors)}"
         )
 
 

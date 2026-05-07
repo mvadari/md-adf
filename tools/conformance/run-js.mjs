@@ -20,10 +20,14 @@ if (!existsSync(distEntry)) {
   );
 }
 
-const { adfToMarkdown, markdownToAdf } = await import(
+const { adfToMarkdown, markdownToAdf, validateAdf } = await import(
   pathToFileURL(distEntry).href
 );
-const summary = await runJsConformance({ adfToMarkdown, markdownToAdf });
+const summary = await runJsConformance({
+  adfToMarkdown,
+  markdownToAdf,
+  validateAdf,
+});
 
 if (process.argv.includes("--json")) {
   console.log(JSON.stringify(summary));
@@ -109,6 +113,7 @@ async function runCase(api, testCase, caseDir) {
       await readFile(resolve(caseDir, "expected.diagnostics.json"), "utf8"),
     );
     const result = api.markdownToAdf(input, testCase.options);
+    assertValidAdf(api, result.value, testCase.id);
     assertAdfEqual(result.value, expectedAdf, testCase.id);
     assertDiagnosticsEqual(
       result.diagnostics,
@@ -130,9 +135,19 @@ async function runCase(api, testCase, caseDir) {
     );
     const adf = api.markdownToAdf(markdown.value, testCase.options);
     assertDiagnosticsEqual(adf.diagnostics, [], `${testCase.id} md-to-adf`);
+    assertValidAdf(api, adf.value, `${testCase.id} roundtrip`);
     assertAdfEqual(adf.value, expected, testCase.id);
   } else {
     throw new Error(`Unknown fixture direction ${testCase.direction}`);
+  }
+}
+
+function assertValidAdf(api, value, id) {
+  const validation = api.validateAdf(value);
+  if (!validation.valid) {
+    throw new Error(
+      `${id} produced invalid ADF: ${validation.errors.join("; ")}`,
+    );
   }
 }
 
