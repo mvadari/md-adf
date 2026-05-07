@@ -37,6 +37,48 @@
       "features": ["paragraph", "text"]
     },
     {
+      "id": "adf-to-md.phase1.invalid-root",
+      "path": "adf-to-md/phase1/invalid-root/case.json",
+      "direction": "adf-to-md",
+      "features": ["invalidAdfRoot"]
+    },
+    {
+      "id": "adf-to-md.phase1.lists-and-blocks",
+      "path": "adf-to-md/phase1/lists-and-blocks/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "paragraph",
+        "text",
+        "hardBreak",
+        "blockquote",
+        "bulletList",
+        "orderedList",
+        "listItem",
+        "codeBlock"
+      ]
+    },
+    {
+      "id": "adf-to-md.phase1.marks-edge",
+      "path": "adf-to-md/phase1/marks-edge/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "paragraph",
+        "text",
+        "strong",
+        "em",
+        "strike",
+        "code",
+        "link",
+        "unsupportedMark"
+      ]
+    },
+    {
+      "id": "adf-to-md.phase1.unsupported-node",
+      "path": "adf-to-md/phase1/unsupported-node/case.json",
+      "direction": "adf-to-md",
+      "features": ["paragraph", "text", "unsupportedNode"]
+    },
+    {
       "id": "md-to-adf.basic.paragraph",
       "path": "md-to-adf/basic/paragraph/case.json",
       "direction": "md-to-adf",
@@ -63,6 +105,32 @@
         "code",
         "link"
       ]
+    },
+    {
+      "id": "md-to-adf.phase1.link-escaping",
+      "path": "md-to-adf/phase1/link-escaping/case.json",
+      "direction": "md-to-adf",
+      "features": ["paragraph", "text", "link"]
+    },
+    {
+      "id": "md-to-adf.phase1.lists-and-breaks",
+      "path": "md-to-adf/phase1/lists-and-breaks/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "paragraph",
+        "text",
+        "hardBreak",
+        "blockquote",
+        "bulletList",
+        "orderedList",
+        "listItem"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.nested-marks-code",
+      "path": "md-to-adf/phase1/nested-marks-code/case.json",
+      "direction": "md-to-adf",
+      "features": ["paragraph", "text", "strong", "em", "strike", "code", "link"]
     },
     {
       "id": "md-to-adf.commonmark.setext-softbreak",

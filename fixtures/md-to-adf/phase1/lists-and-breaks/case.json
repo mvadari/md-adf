@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.phase1.lists-and-breaks",
+  "direction": "md-to-adf",
+  "description": "Converts nested lists, multi-paragraph list items, multi-block blockquotes, and hard versus soft line breaks to ADF.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["paragraph", "text", "hardBreak", "blockquote", "bulletList", "orderedList", "listItem"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

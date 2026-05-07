@@ -1,0 +1,14 @@
+{
+  "id": "adf-to-md.phase1.marks-edge",
+  "direction": "adf-to-md",
+  "description": "Converts nested marks and link/code mark edge cases to Markdown.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm",
+    "validateAdf": false
+  },
+  "features": ["paragraph", "text", "strong", "em", "strike", "code", "link", "unsupportedMark"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

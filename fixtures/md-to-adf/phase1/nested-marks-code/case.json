@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.phase1.nested-marks-code",
+  "direction": "md-to-adf",
+  "description": "Converts nested Markdown marks and code spans inside other marks to ADF marks.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["paragraph", "text", "strong", "em", "strike", "code", "link"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

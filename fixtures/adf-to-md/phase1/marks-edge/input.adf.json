@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "nested",
+          "marks": [
+            {
+              "type": "strong"
+            },
+            {
+              "type": "em"
+            },
+            {
+              "type": "strike"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ", "
+        },
+        {
+          "type": "text",
+          "text": "code+strong",
+          "marks": [
+            {
+              "type": "code"
+            },
+            {
+              "type": "strong"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ", "
+        },
+        {
+          "type": "text",
+          "text": "missing href",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {}
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ", "
+        },
+        {
+          "type": "text",
+          "text": "unknown mark",
+          "marks": [
+            {
+              "type": "underline"
+            },
+            {
+              "type": "em"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ", "
+        },
+        {
+          "type": "text",
+          "text": "escaped link",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://example.com/a path/(draft)\\v1",
+                "title": "A \"quoted\" \\ title"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

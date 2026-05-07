@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.phase1.link-escaping",
+  "direction": "md-to-adf",
+  "description": "Converts escaped Markdown link destinations and titles to ADF link attrs.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["paragraph", "text", "link"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

@@ -1,0 +1,14 @@
+{
+  "id": "adf-to-md.phase1.unsupported-node",
+  "direction": "adf-to-md",
+  "description": "Reports and omits unsupported ADF block nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm",
+    "validateAdf": false
+  },
+  "features": ["paragraph", "text", "unsupportedNode"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

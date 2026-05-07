@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.phase1.lists-and-blocks",
+  "direction": "adf-to-md",
+  "description": "Converts nested lists, multi-paragraph list items, multi-block blockquotes, hard breaks, and code fences containing backticks.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["paragraph", "text", "hardBreak", "blockquote", "bulletList", "orderedList", "listItem", "codeBlock"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}
