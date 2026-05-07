@@ -13,6 +13,7 @@
     "conformance": "npm run build --workspace packages/js && node tools/conformance/run-all.mjs",
     "fixtures": "npm run validate:fixtures",
     "format": "npm run format --workspaces --if-present",
+    "generate:manifest": "node tools/fixtures/validate-fixtures.mjs --write",
     "lint": "npm run lint --workspaces --if-present && npm run lint:python",
     "lint:python": "poetry -C packages/python run ruff check --config ../../pyproject.toml src tests ../../tools/conformance/run-python.py && poetry -C packages/python run mypy --config-file ../../pyproject.toml src tests ../../tools/conformance/run-python.py",
     "test": "npm run validate:fixtures && npm run conformance",

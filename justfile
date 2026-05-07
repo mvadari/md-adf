@@ -6,6 +6,9 @@ default:
 validate-fixtures:
   npm run validate:fixtures
 
+generate-manifest:
+  npm run generate:manifest
+
 fixtures: validate-fixtures
 
 test-js:

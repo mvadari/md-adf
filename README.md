@@ -22,6 +22,7 @@ The project is currently bootstrapped only. Conversion logic is intentionally no
 
 ```sh
 just validate-fixtures
+just generate-manifest
 just test-js
 just test-python
 just test

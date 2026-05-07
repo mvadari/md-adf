@@ -1,12 +1,15 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-07T00:00:00Z",
+  "generatedAt": "2026-05-07T15:56:05.745Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
       "path": "adf-to-md/basic/paragraph/case.json",
       "direction": "adf-to-md",
-      "features": ["paragraph", "text"]
+      "features": [
+        "paragraph",
+        "text"
+      ]
     },
     {
       "id": "adf-to-md.phase1.core",
@@ -34,13 +37,18 @@
       "id": "adf-to-md.phase1.escaping",
       "path": "adf-to-md/phase1/escaping/case.json",
       "direction": "adf-to-md",
-      "features": ["paragraph", "text"]
+      "features": [
+        "paragraph",
+        "text"
+      ]
     },
     {
       "id": "adf-to-md.phase1.invalid-root",
       "path": "adf-to-md/phase1/invalid-root/case.json",
       "direction": "adf-to-md",
-      "features": ["invalidAdfRoot"]
+      "features": [
+        "invalidAdfRoot"
+      ]
     },
     {
       "id": "adf-to-md.phase1.lists-and-blocks",
@@ -76,13 +84,46 @@
       "id": "adf-to-md.phase1.unsupported-node",
       "path": "adf-to-md/phase1/unsupported-node/case.json",
       "direction": "adf-to-md",
-      "features": ["paragraph", "text", "unsupportedNode"]
+      "features": [
+        "paragraph",
+        "text",
+        "unsupportedNode"
+      ]
     },
     {
       "id": "md-to-adf.basic.paragraph",
       "path": "md-to-adf/basic/paragraph/case.json",
       "direction": "md-to-adf",
-      "features": ["paragraph", "text"]
+      "features": [
+        "paragraph",
+        "text"
+      ]
+    },
+    {
+      "id": "md-to-adf.commonmark.setext-softbreak",
+      "path": "md-to-adf/commonmark/setext-softbreak/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "heading",
+        "paragraph",
+        "text",
+        "strong",
+        "link"
+      ]
+    },
+    {
+      "id": "md-to-adf.gfm.table",
+      "path": "md-to-adf/gfm/table/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "paragraph",
+        "text",
+        "strong"
+      ]
     },
     {
       "id": "md-to-adf.phase1.core",
@@ -110,7 +151,11 @@
       "id": "md-to-adf.phase1.link-escaping",
       "path": "md-to-adf/phase1/link-escaping/case.json",
       "direction": "md-to-adf",
-      "features": ["paragraph", "text", "link"]
+      "features": [
+        "paragraph",
+        "text",
+        "link"
+      ]
     },
     {
       "id": "md-to-adf.phase1.lists-and-breaks",
@@ -130,33 +175,25 @@
       "id": "md-to-adf.phase1.nested-marks-code",
       "path": "md-to-adf/phase1/nested-marks-code/case.json",
       "direction": "md-to-adf",
-      "features": ["paragraph", "text", "strong", "em", "strike", "code", "link"]
-    },
-    {
-      "id": "md-to-adf.commonmark.setext-softbreak",
-      "path": "md-to-adf/commonmark/setext-softbreak/case.json",
-      "direction": "md-to-adf",
-      "features": ["heading", "paragraph", "text", "strong", "link"]
-    },
-    {
-      "id": "md-to-adf.gfm.table",
-      "path": "md-to-adf/gfm/table/case.json",
-      "direction": "md-to-adf",
       "features": [
-        "table",
-        "tableRow",
-        "tableHeader",
-        "tableCell",
         "paragraph",
         "text",
-        "strong"
+        "strong",
+        "em",
+        "strike",
+        "code",
+        "link"
       ]
     },
     {
       "id": "roundtrip.supported.emphasis",
       "path": "roundtrip/supported/emphasis/case.json",
       "direction": "roundtrip",
-      "features": ["paragraph", "text", "em"]
+      "features": [
+        "paragraph",
+        "text",
+        "em"
+      ]
     }
   ]
 }

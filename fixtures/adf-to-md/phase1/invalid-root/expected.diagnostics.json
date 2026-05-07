@@ -2,6 +2,7 @@
   {
     "severity": "error",
     "code": "InvalidAdfRoot",
-    "path": ""
+    "path": "",
+    "message": "Invalid ADF root: expected doc version 1."
   }
 ]

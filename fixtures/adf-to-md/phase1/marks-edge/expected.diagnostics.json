@@ -2,16 +2,19 @@
   {
     "severity": "warning",
     "code": "CodeMarkDropsOtherMarks",
-    "path": "/content/0/content/2"
+    "path": "/content/0/content/2",
+    "message": "Markdown code spans cannot contain nested marks; non-code marks were ignored."
   },
   {
     "severity": "warning",
     "code": "InvalidLinkMark",
-    "path": "/content/0/content/4"
+    "path": "/content/0/content/4",
+    "message": "ADF link mark without href was rendered as plain text."
   },
   {
     "severity": "warning",
     "code": "UnsupportedMark",
-    "path": "/content/0/content/6"
+    "path": "/content/0/content/6",
+    "message": "Unsupported ADF mark 'customMark' was ignored."
   }
 ]

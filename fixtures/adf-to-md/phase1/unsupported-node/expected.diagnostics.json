@@ -2,6 +2,7 @@
   {
     "severity": "warning",
     "code": "UnsupportedNode",
-    "path": "/content/1"
+    "path": "/content/1",
+    "message": "Unsupported ADF node 'panel' was omitted."
   }
 ]

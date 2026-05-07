@@ -4,4 +4,14 @@ Shared fixtures define the cross-language behavior contract for `adfmd`.
 
 Each case has a `case.json` file with metadata plus input, expected output, and expected diagnostics files appropriate to the direction.
 
-The initial fixtures are intentionally minimal and serve as schema examples until conversion logic is implemented.
+Validate fixtures and the checked-in generated manifest with:
+
+```sh
+just validate-fixtures
+```
+
+After adding, removing, moving, or editing fixture metadata, regenerate `fixtures/manifest.json` with:
+
+```sh
+just generate-manifest
+```
