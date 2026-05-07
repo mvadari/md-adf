@@ -27,6 +27,7 @@ async function smokeJs() {
     throw new Error("npm pack did not report a tarball name.");
   }
   const tarball = join(packDir, basename(tarballName));
+  await assertTarballIncludes(tarball, "package/README.md");
 
   await mkdirp(projectDir);
   await writeFile(
@@ -102,6 +103,14 @@ async function smokePython() {
 
 async function mkdirp(path) {
   await import("node:fs/promises").then(({ mkdir }) => mkdir(path, { recursive: true }));
+}
+
+async function assertTarballIncludes(tarball, expectedPath) {
+  const contents = await run("tar", ["-tf", tarball], { cwd: root });
+  const entries = contents.stdout.trim().split(/\r?\n/);
+  if (!entries.includes(expectedPath)) {
+    throw new Error(`Expected ${tarball} to include ${expectedPath}.`);
+  }
 }
 
 function run(command, args, options) {

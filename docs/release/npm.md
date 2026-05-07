@@ -29,6 +29,8 @@ npm run build --workspace packages/js
 npm pack --workspace packages/js --dry-run
 ```
 
+- Confirm the packed package includes `README.md`; the smoke test also verifies this by checking for `package/README.md` in the npm tarball.
+
 - Run the smoke test, which installs the local tarball into a temporary npm project and verifies API imports plus the installed CLI:
 
 ```sh
