@@ -3,8 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from ..adf.coerce import coerce_adf_document
 from ..adf.types import AdfNode
-from ..adf.validate import parse_adf
 from ..diagnostics.diagnostic import Diagnostic
 from ..markdown.escape import (
     code_fence_for,
@@ -47,13 +47,13 @@ SUPPORTED_MARKS = {"strong", "em", "strike", "code", "link"}
 
 
 def adf_to_markdown(adf: Any, options: ConversionOptionsInput = None) -> ConversionResult[str]:
-    """Convert an ADF document into Markdown with validation and fallback diagnostics."""
+    """Convert an ADF document into Markdown with fallback diagnostics."""
 
-    resolved_options = resolve_conversion_options(options)
+    resolve_conversion_options(options)
     diagnostics: list[Diagnostic] = []
 
     try:
-        document = parse_adf(adf, resolved_options)
+        document = coerce_adf_document(adf)
     except ValueError as exc:
         diagnostics.append(
             Diagnostic(
@@ -69,6 +69,14 @@ def adf_to_markdown(adf: Any, options: ConversionOptionsInput = None) -> Convers
         value=render_blocks(document.get("content", []), diagnostics, "/content").rstrip(),
         diagnostics=diagnostics,
     )
+
+
+def adf_fragment_to_markdown(
+    adf: list[AdfNode] | AdfNode | Any, options: ConversionOptionsInput = None
+) -> ConversionResult[str]:
+    """Convert an ADF content array or single ADF node into Markdown."""
+
+    return adf_to_markdown(adf, options)
 
 
 def render_blocks(nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str) -> str:

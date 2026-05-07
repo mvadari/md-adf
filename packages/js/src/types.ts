@@ -4,8 +4,3 @@ export type {
   DiagnosticSeverity,
 } from "./diagnostics/diagnostic.js"
 export type { ConversionOptions, ConversionResult } from "./options.js"
-export {
-  adfFragmentToMarkdown,
-  adfToMarkdown,
-} from "./convert/adfToMarkdown.js"
-export { markdownToAdf } from "./convert/markdownToAdf.js"

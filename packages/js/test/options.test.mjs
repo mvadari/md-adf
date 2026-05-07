@@ -65,14 +65,9 @@ test("conversion profiles are accepted but do not change Phase 1 behavior", () =
   )
 })
 
-test("validateAdf controls pinned schema validation during ADF conversion", () => {
+test("ADF conversion reports invalid roots without loading schema validation", () => {
   const validated = adfToMarkdown(invalidNestedBlockAdf)
-  assert.equal(validated.value, "")
-  assert.equal(validated.diagnostics[0]?.severity, "error")
-  assert.equal(validated.diagnostics[0]?.code, "InvalidAdfRoot")
-
-  const skipped = adfToMarkdown(invalidNestedBlockAdf, { validateAdf: false })
-  assert.deepEqual(skipped, {
+  assert.deepEqual(validated, {
     value: "",
     diagnostics: [
       {
@@ -83,6 +78,14 @@ test("validateAdf controls pinned schema validation during ADF conversion", () =
       },
     ],
   })
+
+  const skipped = adfToMarkdown(invalidNestedBlockAdf, { validateAdf: false })
+  assert.deepEqual(skipped, validated)
+})
+
+test("ADF fragments can be rendered directly", () => {
+  assert.equal(adfToMarkdown(validAdf.content).value, "Hello")
+  assert.equal(adfToMarkdown(validAdf.content[0]).value, "Hello")
 })
 
 test("normalizeAdf is accepted as a future-only no-op", () => {

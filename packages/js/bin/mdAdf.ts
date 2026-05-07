@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { readFile, writeFile } from "node:fs/promises"
-import { adfToMarkdown, markdownToAdf, validateAdf } from "../src/index.js"
+import { validateAdf } from "../src/adf/validate.js"
+import { adfToMarkdown, markdownToAdf } from "../src/index.js"
 import type { ConversionOptions, Diagnostic } from "../src/index.js"
 
 type Command = "to-md" | "to-adf" | "validate-adf"

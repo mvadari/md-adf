@@ -2,6 +2,16 @@
   "name": "md-adf",
   "version": "0.1.2",
   "description": "Markdown-ADF converter for JavaScript and TypeScript.",
+  "keywords": [
+    "adf",
+    "atlaskit",
+    "atlassian",
+    "confluence",
+    "jira",
+    "markdown",
+    "markdown-to-adf",
+    "adf-to-markdown"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/src/index.js",
@@ -9,7 +19,32 @@
   "exports": {
     ".": {
       "types": "./dist/src/index.d.ts",
-      "import": "./dist/src/index.js"
+      "browser": "./dist/src/index.js",
+      "import": "./dist/src/index.js",
+      "default": "./dist/src/index.js"
+    },
+    "./adf-to-markdown": {
+      "types": "./dist/src/convert/adfToMarkdown.d.ts",
+      "browser": "./dist/src/convert/adfToMarkdown.js",
+      "import": "./dist/src/convert/adfToMarkdown.js",
+      "default": "./dist/src/convert/adfToMarkdown.js"
+    },
+    "./markdown-to-adf": {
+      "types": "./dist/src/convert/markdownToAdf.d.ts",
+      "browser": "./dist/src/convert/markdownToAdf.js",
+      "import": "./dist/src/convert/markdownToAdf.js",
+      "default": "./dist/src/convert/markdownToAdf.js"
+    },
+    "./validate": {
+      "types": "./dist/src/adf/validate.d.ts",
+      "import": "./dist/src/adf/validate.js",
+      "default": "./dist/src/adf/validate.js"
+    },
+    "./types": {
+      "types": "./dist/src/types.d.ts",
+      "browser": "./dist/src/types.js",
+      "import": "./dist/src/types.js",
+      "default": "./dist/src/types.js"
     }
   },
   "bin": {
@@ -28,7 +63,7 @@
     "lint:format": "prettier --check \"{bin,src,test}/**/*.{ts,mjs}\" package.json README.md tsconfig.json",
     "lint:types": "tsc -p tsconfig.json --noEmit",
     "prepack": "npm run build",
-    "test": "npm run build && node test/conformance.test.mjs && node --test test/adf-validation.test.mjs test/options.test.mjs test/cli.test.mjs"
+    "test": "npm run build && node test/conformance.test.mjs && node --test test/adf-validation.test.mjs test/options.test.mjs test/cli.test.mjs test/exports.test.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -1,5 +1,5 @@
-import type { AdfDocument } from "../adf/types.js"
-import { parseAdf } from "../adf/validate.js"
+import { coerceAdfDocument } from "../adf/coerce.js"
+import type { AdfDocument, AdfNode } from "../adf/types.js"
 import type { Diagnostic } from "../diagnostics/diagnostic.js"
 import {
   codeFenceFor,
@@ -14,7 +14,6 @@ import {
   type ConversionResult,
 } from "../options.js"
 
-type AdfNode = AdfDocument["content"][number]
 type AdfMark = NonNullable<AdfNode["marks"]>[number]
 
 const supportedNodes = new Set([
@@ -56,12 +55,12 @@ export function adfToMarkdown(
   adf: AdfDocument | unknown,
   options: ConversionOptions = {},
 ): ConversionResult<string> {
-  const resolvedOptions = resolveConversionOptions(options)
+  resolveConversionOptions(options)
   const diagnostics: Diagnostic[] = []
   let document: AdfDocument
 
   try {
-    document = parseAdf(adf, resolvedOptions)
+    document = coerceAdfDocument(adf)
   } catch (error) {
     diagnostics.push({
       severity: "error",
@@ -76,6 +75,16 @@ export function adfToMarkdown(
     value: renderBlocks(document.content, diagnostics, "/content").trimEnd(),
     diagnostics,
   }
+}
+
+/**
+ * Converts an ADF content array or single ADF node into Markdown.
+ */
+export function adfFragmentToMarkdown(
+  adf: AdfNode[] | AdfNode | unknown,
+  options: ConversionOptions = {},
+): ConversionResult<string> {
+  return adfToMarkdown(adf, options)
 }
 
 /**

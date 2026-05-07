@@ -8,6 +8,7 @@ from typing import Any, cast
 from jsonschema import Draft4Validator
 from jsonschema.exceptions import ValidationError
 
+from .coerce import is_adf_document
 from .types import AdfDocument
 
 
@@ -29,12 +30,7 @@ class ValidationResult:
 def parse_adf(value: Any, options: Any = None) -> AdfDocument:
     """Parse an unknown value as an ADF document, optionally validating schema."""
 
-    if (
-        isinstance(value, dict)
-        and value.get("version") == 1
-        and value.get("type") == "doc"
-        and isinstance(value.get("content"), list)
-    ):
+    if is_adf_document(value):
         if _validate_enabled(options):
             errors = list(_VALIDATOR.iter_errors(value))
             if errors:

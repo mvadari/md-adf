@@ -1,4 +1,5 @@
 import type { AdfDocument } from "./types.js"
+import { isAdfDocument } from "./coerce.js"
 import type { AnySchema } from "ajv-draft-04/dist/index.js"
 import { existsSync, readFileSync } from "node:fs"
 import { createRequire } from "node:module"
@@ -38,13 +39,7 @@ export function parseAdf(
   value: unknown,
   options: ParseAdfOptions = {},
 ): AdfDocument {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    (value as { version?: unknown }).version === 1 &&
-    (value as { type?: unknown }).type === "doc" &&
-    Array.isArray((value as { content?: unknown }).content)
-  ) {
+  if (isAdfDocument(value)) {
     if (options.validateAdf !== false) {
       const valid = validatePinnedAdfSchema(value)
       if (!valid) {

@@ -7,7 +7,7 @@ import test from "node:test"
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, "../../..")
-const distEntry = resolve(here, "../dist/src/index.js")
+const distEntry = resolve(here, "../dist/src/adf/validate.js")
 const invalidFixtures = resolve(root, "fixtures/invalid/adf")
 
 if (!existsSync(distEntry)) {
