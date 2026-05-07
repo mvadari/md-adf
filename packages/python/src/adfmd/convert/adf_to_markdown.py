@@ -12,7 +12,7 @@ from ..markdown.escape import (
     escape_markdown_text,
     render_code_span,
 )
-from ..options import ConversionOptions, ConversionResult
+from ..options import ConversionOptionsInput, ConversionResult, resolve_conversion_options
 
 SUPPORTED_NODES = {
     "paragraph",
@@ -31,12 +31,13 @@ SUPPORTED_MARKS = {"strong", "em", "strike", "code", "link"}
 
 
 def adf_to_markdown(
-    adf: Any, options: ConversionOptions | None = None
+    adf: Any, options: ConversionOptionsInput = None
 ) -> ConversionResult[str]:
+    resolved_options = resolve_conversion_options(options)
     diagnostics: list[Diagnostic] = []
 
     try:
-        document = parse_adf(adf, options)
+        document = parse_adf(adf, resolved_options)
     except ValueError as exc:
         diagnostics.append(
             Diagnostic(

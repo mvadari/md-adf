@@ -4,7 +4,11 @@ import remarkParse from "remark-parse";
 
 import type { AdfDocument, AdfNode } from "../adf/types.js";
 import type { Diagnostic } from "../diagnostics/diagnostic.js";
-import type { ConversionOptions, ConversionResult } from "../options.js";
+import {
+  resolveConversionOptions,
+  type ConversionOptions,
+  type ConversionResult,
+} from "../options.js";
 
 type MarkdownNode = {
   type: string;
@@ -25,8 +29,9 @@ const markdownParser = unified().use(remarkParse).use(remarkGfm);
 
 export function markdownToAdf(
   markdown: string,
-  _options: ConversionOptions = {},
+  options: ConversionOptions = {},
 ): ConversionResult<AdfDocument> {
+  resolveConversionOptions(options);
   const diagnostics: Diagnostic[] = [];
   const tree = markdownParser.parse(markdown.replace(/\r\n?/g, "\n"));
   const content = blockChildren((tree as MarkdownNode).children ?? []);

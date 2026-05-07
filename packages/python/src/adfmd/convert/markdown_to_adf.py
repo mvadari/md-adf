@@ -6,7 +6,7 @@ import mistune
 
 from ..adf.types import AdfDocument, AdfNode
 from ..diagnostics.diagnostic import Diagnostic
-from ..options import ConversionOptions, ConversionResult
+from ..options import ConversionOptionsInput, ConversionResult, resolve_conversion_options
 
 MarkdownNode = dict[str, Any]
 
@@ -17,9 +17,9 @@ MARKDOWN_PARSER = mistune.create_markdown(
 
 
 def markdown_to_adf(
-    markdown: str, options: ConversionOptions | None = None
+    markdown: str, options: ConversionOptionsInput = None
 ) -> ConversionResult[AdfDocument]:
-    _ = options
+    resolve_conversion_options(options)
     diagnostics: list[Diagnostic] = []
     tree = cast(list[MarkdownNode], MARKDOWN_PARSER(markdown))
     content = _block_children(tree)

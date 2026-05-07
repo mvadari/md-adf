@@ -38,6 +38,15 @@ class ConversionResult(Generic[T]):
     diagnostics: list[Diagnostic]
 ```
 
+Current `ConversionOptions` support:
+
+- `markdown_dialect`: only `gfm` is supported; other values are rejected. Dict options may also use `markdownDialect`.
+- `profile`: `jira`, `confluence`, and `portableMarkdown` are accepted for API and CLI parity, but do not change Phase 1 conversion behavior yet.
+- `validate_adf`: defaults to `True`; set to `False` to skip pinned schema validation for ADF-to-Markdown input. Dict options may also use `validateAdf`.
+- `normalize_adf`: accepted for future normalization controls. It is currently a no-op because Phase 1 Markdown-to-ADF output is already normalized where supported. Dict options may also use `normalizeAdf`.
+
+ADF-to-Markdown returns a string with trailing whitespace trimmed and no final newline. The CLI writes that string exactly.
+
 ## CLI
 
 ```sh

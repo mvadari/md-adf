@@ -20,6 +20,16 @@ Phase 1 is implemented in both packages:
 - GFM table parsing from Markdown to ADF.
 - Structured diagnostics for invalid ADF roots, unsupported ADF nodes/marks, invalid containers, and invalid link marks.
 
+## Current Options
+
+The JavaScript and Python APIs share the same Phase 1 option behavior:
+
+- Markdown dialect: only `gfm` is supported; unsupported dialect values are rejected.
+- Profile: `jira`, `confluence`, and `portableMarkdown` are accepted for API and CLI parity, but are currently no-ops.
+- ADF validation: enabled by default for ADF-to-Markdown input and can be disabled with `validateAdf: false` in JS or `validate_adf=False` / `{"validateAdf": False}` in Python.
+- ADF normalization: accepted as `normalizeAdf` / `normalize_adf`, but future-only for now. Markdown-to-ADF already merges adjacent compatible text nodes and drops empty text nodes in the current supported surface.
+- ADF-to-Markdown newline policy: returned strings are trimmed of trailing whitespace and do not include a final newline.
+
 ## Install and Use
 
 JavaScript:

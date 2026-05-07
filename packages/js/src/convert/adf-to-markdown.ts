@@ -8,7 +8,11 @@ import {
   escapeMarkdownText,
   renderCodeSpan,
 } from "../markdown/escape.js";
-import type { ConversionOptions, ConversionResult } from "../options.js";
+import {
+  resolveConversionOptions,
+  type ConversionOptions,
+  type ConversionResult,
+} from "../options.js";
 
 type AdfNode = AdfDocument["content"][number];
 type AdfMark = NonNullable<AdfNode["marks"]>[number];
@@ -33,11 +37,12 @@ export function adfToMarkdown(
   adf: AdfDocument | unknown,
   options: ConversionOptions = {},
 ): ConversionResult<string> {
+  const resolvedOptions = resolveConversionOptions(options);
   const diagnostics: Diagnostic[] = [];
   let document: AdfDocument;
 
   try {
-    document = parseAdf(adf, options);
+    document = parseAdf(adf, resolvedOptions);
   } catch (error) {
     diagnostics.push({
       severity: "error",

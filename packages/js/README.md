@@ -38,6 +38,15 @@ type ConversionResult<T> = {
 };
 ```
 
+Current `ConversionOptions` support:
+
+- `markdownDialect`: only `gfm` is supported; other values are rejected.
+- `profile`: `jira`, `confluence`, and `portableMarkdown` are accepted for API and CLI parity, but do not change Phase 1 conversion behavior yet.
+- `validateAdf`: defaults to `true`; set to `false` to skip pinned schema validation for ADF-to-Markdown input.
+- `normalizeAdf`: accepted for future normalization controls. It is currently a no-op because Phase 1 Markdown-to-ADF output is already normalized where supported.
+
+ADF-to-Markdown returns a string with trailing whitespace trimmed and no final newline. The CLI writes that string exactly.
+
 ## CLI
 
 ```sh
