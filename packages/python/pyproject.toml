@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "adfmd"
-version = "0.0.0"
+version = "0.1.0"
 description = "ADF-Markdown converter for Python."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -16,6 +16,10 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Typing :: Typed"
 ]
+dependencies = [
+  "jsonschema>=4.26.0,<5.0.0",
+  "mistune>=3.2.1,<4.0.0"
+]
 
 [project.scripts]
 adfmd = "adfmd_cli.__main__:main"
@@ -25,16 +29,9 @@ packages = [
   { include = "adfmd", from = "src" },
   { include = "adfmd_cli", from = "src" }
 ]
-include = [
-  { path = "src/adfmd/schemas/adf-schema.json", format = ["sdist", "wheel"] }
-]
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.0"
 pytest = ">=8.0"
 ruff = ">=0.4"
 types-jsonschema = "^4.26.0.20260408"
-
-[tool.poetry.dependencies]
-mistune = "^3.2.1"
-jsonschema = "^4.26.0"
