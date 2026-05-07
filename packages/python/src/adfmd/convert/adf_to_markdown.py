@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ..adf.types import AdfDocument, AdfNode
+from ..adf.types import AdfNode
 from ..adf.validate import parse_adf
 from ..diagnostics.diagnostic import Diagnostic
 from ..markdown.escape import (
@@ -239,15 +239,15 @@ def render_marked_text(
 
     rendered = escape_markdown_text(text, at_line_start)
     for mark_type in MARK_ORDER:
-        mark = next(
+        current_mark = next(
             (candidate for candidate in known_marks if candidate.get("type") == mark_type),
             None,
         )
-        if mark is None:
+        if current_mark is None:
             continue
 
         if mark_type == "link":
-            attrs = mark.get("attrs")
+            attrs = current_mark.get("attrs")
             href = attrs.get("href") if isinstance(attrs, dict) else ""
             if not isinstance(href, str) or not href:
                 diagnostics.append(

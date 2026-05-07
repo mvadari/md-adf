@@ -14,7 +14,13 @@ test-js:
 test-python:
   npm run test:python
 
-test: validate-fixtures test-js test-python
+lint-python:
+  npm run lint:python
+
+conformance:
+  npm run conformance
+
+test: validate-fixtures conformance
 
 lint:
   npm run lint

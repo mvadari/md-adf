@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "adfmd"
@@ -20,5 +20,13 @@ classifiers = [
 [project.scripts]
 adfmd = "adfmd_cli.__main__:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/adfmd", "src/adfmd_cli"]
+[tool.poetry]
+packages = [
+  { include = "adfmd", from = "src" },
+  { include = "adfmd_cli", from = "src" }
+]
+
+[tool.poetry.group.dev.dependencies]
+mypy = ">=1.0"
+pytest = ">=8.0"
+ruff = ">=0.4"

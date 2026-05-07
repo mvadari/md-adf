@@ -3,13 +3,17 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  assertAdfEqual,
+  assertDiagnosticsEqual,
+  assertMarkdownEqual,
+  loadManifest,
+} from "../../../tools/conformance/shared.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../../..");
 const fixturesRoot = resolve(root, "fixtures");
-const manifest = JSON.parse(
-  await readFile(resolve(fixturesRoot, "manifest.json"), "utf8"),
-);
+const manifest = await loadManifest();
 const distEntry = resolve(here, "../dist/src/index.js");
 
 if (!existsSync(distEntry)) {
@@ -47,11 +51,11 @@ for (const manifestCase of manifest.cases) {
       await readFile(resolve(caseDir, "expected.diagnostics.json"), "utf8"),
     );
     const result = adfToMarkdown(input, testCase.options);
-    assert.equal(result.value, expectedMarkdown.trimEnd(), testCase.id);
-    assert.deepEqual(
+    assertMarkdownEqual(result.value, expectedMarkdown, testCase.id);
+    assertDiagnosticsEqual(
       result.diagnostics,
       expectedDiagnostics,
-      `${testCase.id} diagnostics`,
+      testCase.id,
     );
     executed += 1;
   } else if (testCase.direction === "md-to-adf") {
@@ -62,12 +66,12 @@ for (const manifestCase of manifest.cases) {
     const expectedDiagnostics = JSON.parse(
       await readFile(resolve(caseDir, "expected.diagnostics.json"), "utf8"),
     );
-    const result = markdownToAdf(input.trimEnd(), testCase.options);
-    assert.deepEqual(result.value, expectedAdf, testCase.id);
-    assert.deepEqual(
+    const result = markdownToAdf(input, testCase.options);
+    assertAdfEqual(result.value, expectedAdf, testCase.id);
+    assertDiagnosticsEqual(
       result.diagnostics,
       expectedDiagnostics,
-      `${testCase.id} diagnostics`,
+      testCase.id,
     );
     executed += 1;
   } else if (testCase.direction === "roundtrip") {
@@ -78,18 +82,14 @@ for (const manifestCase of manifest.cases) {
       await readFile(resolve(caseDir, "expected.normalized.adf.json"), "utf8"),
     );
     const markdown = adfToMarkdown(input, testCase.options);
-    assert.deepEqual(
+    assertDiagnosticsEqual(
       markdown.diagnostics,
       [],
-      `${testCase.id} adf-to-md diagnostics`,
+      `${testCase.id} adf-to-md`,
     );
     const adf = markdownToAdf(markdown.value, testCase.options);
-    assert.deepEqual(
-      adf.diagnostics,
-      [],
-      `${testCase.id} md-to-adf diagnostics`,
-    );
-    assert.deepEqual(adf.value, expected, testCase.id);
+    assertDiagnosticsEqual(adf.diagnostics, [], `${testCase.id} md-to-adf`);
+    assertAdfEqual(adf.value, expected, testCase.id);
     executed += 1;
   }
 }

@@ -10,12 +10,14 @@
   ],
   "scripts": {
     "build": "npm run build --workspace packages/js",
+    "conformance": "npm run build --workspace packages/js && node tools/conformance/run-all.mjs",
     "fixtures": "npm run validate:fixtures",
     "format": "npm run format --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run validate:fixtures && npm run test:js && npm run test:python",
+    "lint": "npm run lint --workspaces --if-present && npm run lint:python",
+    "lint:python": "poetry -C packages/python run ruff check --config ../../pyproject.toml src tests ../../tools/conformance/run-python.py && poetry -C packages/python run mypy --config-file ../../pyproject.toml src tests ../../tools/conformance/run-python.py",
+    "test": "npm run validate:fixtures && npm run conformance",
     "test:js": "npm run test --workspace packages/js",
-    "test:python": "python3 tools/conformance/run-python.py",
+    "test:python": "poetry -C packages/python run python ../../tools/conformance/run-python.py",
     "validate:fixtures": "node tools/fixtures/validate-fixtures.mjs"
   },
   "engines": {

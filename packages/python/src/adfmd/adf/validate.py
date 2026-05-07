@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from .types import AdfDocument
 
@@ -19,7 +19,7 @@ def parse_adf(value: Any) -> AdfDocument:
         and value.get("type") == "doc"
         and isinstance(value.get("content"), list)
     ):
-        return value
+        return cast(AdfDocument, value)
 
     raise ValueError("Invalid ADF root: expected doc version 1.")
 
