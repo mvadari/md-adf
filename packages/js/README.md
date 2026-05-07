@@ -1,6 +1,6 @@
 # md-adf
 
-TypeScript implementation of the ADF-Markdown converter.
+TypeScript implementation of the Markdown-ADF converter.
 
 ## Install
 

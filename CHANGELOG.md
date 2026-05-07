@@ -14,8 +14,8 @@ Initial release candidate for the JavaScript/TypeScript and Python packages.
 
 ### Added
 
-- Publishable npm package `adfmd` with ESM API, TypeScript declarations, and `adfmd` CLI.
-- Publishable PyPI package `adfmd` with typed Python API, `py.typed`, and `adfmd` CLI.
+- Publishable npm package `md-adf` with ESM API, TypeScript declarations, and `md-adf` CLI.
+- Publishable PyPI package `md-adf` with typed Python API, `py.typed`, and `md-adf` CLI.
 - Shared conformance fixtures and generated manifest used by both implementations.
 - ADF validation/parsing against a pinned ADF schema.
 - ADF-to-Markdown conversion for `doc`, `paragraph`, `heading`, `blockquote`, `bulletList`, `orderedList`, `listItem`, `codeBlock`, `rule`, simple GFM tables, task lists, media link/text fallback, `text`, and `hardBreak`.

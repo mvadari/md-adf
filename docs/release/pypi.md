@@ -1,6 +1,6 @@
 # PyPI Release Checklist
 
-Use this checklist for the `adfmd` Python package. Do not publish from a dirty worktree.
+Use this checklist for the `md-adf` Python package. Do not publish from a dirty worktree.
 
 ## Preflight
 

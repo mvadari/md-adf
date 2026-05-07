@@ -1,8 +1,8 @@
 # md-adf
 
-ADF-Markdown converter monorepo.
+Markdown-ADF converter monorepo.
 
-This repository hosts JavaScript/TypeScript and Python implementations of the same bidirectional converter between Atlassian Document Format (ADF) and GitHub Flavored Markdown (GFM). Shared fixtures define the behavior contract across both packages.
+This repository hosts JavaScript/TypeScript and Python implementations of the same bidirectional converter between GitHub Flavored Markdown (GFM) and Atlassian Document Format (ADF). Shared fixtures define the behavior contract across both packages.
 
 Current packages:
 

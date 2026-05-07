@@ -1,6 +1,6 @@
 # md-adf
 
-Typed Python implementation of the ADF-Markdown converter.
+Typed Python implementation of the Markdown-ADF converter.
 
 ## Install
 

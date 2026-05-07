@@ -1,7 +1,7 @@
 {
   "name": "md-adf",
   "version": "0.1.0",
-  "description": "ADF-Markdown converter for JavaScript and TypeScript.",
+  "description": "Markdown-ADF converter for JavaScript and TypeScript.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/src/index.js",

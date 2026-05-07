@@ -1,6 +1,6 @@
 # npm Release Checklist
 
-Use this checklist for the `adfmd` JavaScript package. Do not publish from a dirty worktree.
+Use this checklist for the `md-adf` JavaScript package. Do not publish from a dirty worktree.
 
 ## Preflight
 

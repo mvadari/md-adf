@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping build `adfmd`.
+Thanks for helping build `md-adf`.
 
 This repository is fixture-first: shared behavior belongs in `fixtures/`, while each language package implements that behavior natively.
 

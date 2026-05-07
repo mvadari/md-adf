@@ -1,6 +1,6 @@
 # Fixtures
 
-Shared fixtures define the cross-language behavior contract for `adfmd`.
+Shared fixtures define the cross-language behavior contract for `md-adf`.
 
 Each case has a `case.json` file with metadata plus input, expected output, and expected diagnostics files appropriate to the direction.
 

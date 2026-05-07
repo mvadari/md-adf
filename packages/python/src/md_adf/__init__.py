@@ -1,4 +1,4 @@
-"""ADF-Markdown converter package skeleton."""
+"""Markdown-ADF converter package."""
 
 from .adf.validate import parse_adf, validate_adf
 from .convert.adf_to_markdown import adf_to_markdown

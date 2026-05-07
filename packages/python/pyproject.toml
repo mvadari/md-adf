@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "md-adf"
 version = "0.1.0"
-description = "ADF-Markdown converter for Python."
+description = "Markdown-ADF converter for Python."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-  { name = "ADF Markdown contributors" }
+  { name = "Markdown-ADF contributors" }
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
