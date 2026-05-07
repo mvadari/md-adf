@@ -25,7 +25,5 @@
   ],
   "expectedLoss": false,
   "skip": {},
-  "xfail": {
-    "python": "Conversion logic is not implemented in the bootstrap skeleton."
-  }
+  "xfail": {}
 }
