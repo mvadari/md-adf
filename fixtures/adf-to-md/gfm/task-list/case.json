@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.task-list",
+  "direction": "adf-to-md",
+  "description": "Converts an ADF taskList to a GFM task list.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["taskList", "taskItem", "text", "strong", "link"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

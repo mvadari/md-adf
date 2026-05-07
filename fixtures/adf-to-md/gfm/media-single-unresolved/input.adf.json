@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "mediaSingle",
+      "attrs": {
+        "layout": "center"
+      },
+      "content": [
+        {
+          "type": "media",
+          "attrs": {
+            "type": "file",
+            "id": "file-123",
+            "collection": "MediaServicesSample"
+          }
+        }
+      ]
+    }
+  ]
+}

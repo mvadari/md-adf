@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedMedia",
+    "path": "/content/0/content/0",
+    "message": "ADF media without a resolvable URL was rendered as text.",
+    "fallback": "text"
+  }
+]

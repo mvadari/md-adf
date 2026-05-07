@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.media-group-multiple",
+  "direction": "adf-to-md",
+  "description": "Converts each media child in an ADF mediaGroup to a link fallback.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["mediaGroup", "media"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "mediaGroup",
+      "content": [
+        {
+          "type": "media",
+          "attrs": {
+            "type": "external",
+            "url": "https://example.com/one.png",
+            "alt": "One"
+          }
+        },
+        {
+          "type": "media",
+          "attrs": {
+            "type": "external",
+            "url": "https://example.com/two.png",
+            "alt": "Two"
+          }
+        }
+      ]
+    }
+  ]
+}

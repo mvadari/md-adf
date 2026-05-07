@@ -1,0 +1,13 @@
+{
+  "id": "roundtrip.supported.task-list",
+  "direction": "roundtrip",
+  "description": "Round-trips a schema-valid ADF taskList through GFM task list Markdown.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["taskList", "taskItem", "text", "em"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

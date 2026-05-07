@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.image-nested-marks",
+  "direction": "md-to-adf",
+  "description": "Converts Markdown images inside emphasized or linked text to schema-valid marked text fallbacks.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["image", "link", "em"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Em image",
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://example.com/em.png"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " and "
+        },
+        {
+          "type": "text",
+          "text": "Linked image",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://example.com/page"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

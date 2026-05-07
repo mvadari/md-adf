@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-07T16:40:43.778Z",
+  "generatedAt": "2026-05-07T17:22:06.601Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -35,6 +35,24 @@
       ]
     },
     {
+      "id": "adf-to-md.gfm.media-group-multiple",
+      "path": "adf-to-md/gfm/media-group-multiple/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "mediaGroup",
+        "media"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.media-single-unresolved",
+      "path": "adf-to-md/gfm/media-single-unresolved/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "mediaSingle",
+        "media"
+      ]
+    },
+    {
       "id": "adf-to-md.gfm.simple-table",
       "path": "adf-to-md/gfm/simple-table/case.json",
       "direction": "adf-to-md",
@@ -46,6 +64,43 @@
         "paragraph",
         "text",
         "strong"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.table-supported-marks",
+      "path": "adf-to-md/gfm/table-supported-marks/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "table",
+        "tableHeader",
+        "tableCell",
+        "strong",
+        "em",
+        "strike",
+        "code",
+        "link"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.table-unsupported-inline",
+      "path": "adf-to-md/gfm/table-unsupported-inline/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "table",
+        "hardBreak",
+        "emoji"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.task-list",
+      "path": "adf-to-md/gfm/task-list/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "taskList",
+        "taskItem",
+        "text",
+        "strong",
+        "link"
       ]
     },
     {
@@ -161,6 +216,25 @@
       ]
     },
     {
+      "id": "md-to-adf.gfm.image-nested-marks",
+      "path": "md-to-adf/gfm/image-nested-marks/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "image",
+        "link",
+        "em"
+      ]
+    },
+    {
+      "id": "md-to-adf.gfm.image-no-alt",
+      "path": "md-to-adf/gfm/image-no-alt/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "image",
+        "link"
+      ]
+    },
+    {
       "id": "md-to-adf.gfm.table",
       "path": "md-to-adf/gfm/table/case.json",
       "direction": "md-to-adf",
@@ -250,6 +324,30 @@
       "direction": "roundtrip",
       "features": [
         "paragraph",
+        "text",
+        "em"
+      ]
+    },
+    {
+      "id": "roundtrip.supported.simple-table",
+      "path": "roundtrip/supported/simple-table/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "paragraph",
+        "text"
+      ]
+    },
+    {
+      "id": "roundtrip.supported.task-list",
+      "path": "roundtrip/supported/task-list/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "taskList",
+        "taskItem",
         "text",
         "em"
       ]

@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.media-single-unresolved",
+  "direction": "adf-to-md",
+  "description": "Converts mediaSingle without a resolvable URL to text with a diagnostic.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["mediaSingle", "media"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

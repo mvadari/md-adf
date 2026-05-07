@@ -1,0 +1,16 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedComplexTable",
+    "path": "/content/0/content/1/content/1",
+    "message": "ADF table cell with unsupported inline content was omitted.",
+    "fallback": "omit"
+  },
+  {
+    "severity": "warning",
+    "code": "UnsupportedComplexTable",
+    "path": "/content/1/content/1/content/0",
+    "message": "ADF table cell with unsupported inline content was omitted.",
+    "fallback": "omit"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.table-unsupported-inline",
+  "direction": "adf-to-md",
+  "description": "Omits tables with hardBreak or unsupported inline content in cells.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["table", "hardBreak", "emoji"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

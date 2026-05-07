@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.table-supported-marks",
+  "direction": "adf-to-md",
+  "description": "Converts supported inline marks inside simple ADF table cells.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["table", "tableHeader", "tableCell", "strong", "em", "strike", "code", "link"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

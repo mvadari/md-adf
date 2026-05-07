@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "taskList",
+      "attrs": {
+        "localId": "task-list-content-0"
+      },
+      "content": [
+        {
+          "type": "taskItem",
+          "attrs": {
+            "localId": "task-item-content-0-content-0",
+            "state": "TODO"
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Open item"
+            }
+          ]
+        },
+        {
+          "type": "taskItem",
+          "attrs": {
+            "localId": "task-item-content-0-content-1",
+            "state": "DONE"
+          },
+          "content": [
+            {
+              "type": "text",
+              "text": "Done item",
+              "marks": [
+                {
+                  "type": "em"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

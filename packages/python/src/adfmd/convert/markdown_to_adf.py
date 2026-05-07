@@ -342,6 +342,11 @@ def _inline_node(
         title = attrs.get("title")
         if isinstance(title, str) and title:
             image_link_attrs["title"] = title
+        image_marks = (
+            marks
+            if any(mark.get("type") == "link" for mark in marks)
+            else [*marks, {"type": "link", "attrs": image_link_attrs}]
+        )
         diagnostics.append(
             Diagnostic(
                 severity="warning",
@@ -351,7 +356,7 @@ def _inline_node(
             )
         )
         alt = _plain_text(node) or str(attrs.get("url", ""))
-        return _text_node(alt, [*marks, {"type": "link", "attrs": image_link_attrs}])
+        return _text_node(alt, image_marks)
 
     if node_type == "inline_html":
         return _text_node(str(node.get("raw", "")), marks)

@@ -328,16 +328,17 @@ function inlineNode(
     case "image": {
       const attrs: Record<string, unknown> = { href: node.url ?? "" };
       if (node.title) attrs.title = node.title;
+      const label = node.alt || node.url || "";
+      const imageMarks = marks.some((mark) => mark.type === "link")
+        ? marks
+        : [...marks, { type: "link", attrs }];
       diagnostics.push({
         severity: "warning",
         code: "MarkdownImageLinkFallback",
         message: "Markdown image was converted to linked text fallback.",
         fallback: "link",
       });
-      return textNode(node.alt ?? node.url ?? "", [
-        ...marks,
-        { type: "link", attrs },
-      ]);
+      return textNode(label, imageMarks);
     }
     case "html":
       return textNode(node.value ?? "", marks);

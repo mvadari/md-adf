@@ -1,0 +1,14 @@
+[
+  {
+    "severity": "warning",
+    "code": "MarkdownImageLinkFallback",
+    "message": "Markdown image was converted to linked text fallback.",
+    "fallback": "link"
+  },
+  {
+    "severity": "warning",
+    "code": "MarkdownImageLinkFallback",
+    "message": "Markdown image was converted to linked text fallback.",
+    "fallback": "link"
+  }
+]

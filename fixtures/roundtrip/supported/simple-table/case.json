@@ -1,0 +1,13 @@
+{
+  "id": "roundtrip.supported.simple-table",
+  "direction": "roundtrip",
+  "description": "Round-trips a simple rectangular table through GFM pipe table Markdown.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["table", "tableRow", "tableHeader", "tableCell", "paragraph", "text"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

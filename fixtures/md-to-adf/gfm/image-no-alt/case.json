@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.image-no-alt",
+  "direction": "md-to-adf",
+  "description": "Converts a Markdown image without alt text to a schema-valid linked text fallback.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["image", "link"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}
