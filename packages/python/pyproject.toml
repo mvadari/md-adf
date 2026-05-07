@@ -30,3 +30,6 @@ packages = [
 mypy = ">=1.0"
 pytest = ">=8.0"
 ruff = ">=0.4"
+
+[tool.poetry.dependencies]
+mistune = "^3.2.1"

@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.table",
+  "direction": "md-to-adf",
+  "description": "Converts a GFM pipe table to ADF table nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["table", "tableRow", "tableHeader", "tableCell", "paragraph", "text", "strong"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

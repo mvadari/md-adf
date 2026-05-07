@@ -65,6 +65,26 @@
       ]
     },
     {
+      "id": "md-to-adf.commonmark.setext-softbreak",
+      "path": "md-to-adf/commonmark/setext-softbreak/case.json",
+      "direction": "md-to-adf",
+      "features": ["heading", "paragraph", "text", "strong", "link"]
+    },
+    {
+      "id": "md-to-adf.gfm.table",
+      "path": "md-to-adf/gfm/table/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "paragraph",
+        "text",
+        "strong"
+      ]
+    },
+    {
       "id": "roundtrip.supported.emphasis",
       "path": "roundtrip/supported/emphasis/case.json",
       "direction": "roundtrip",

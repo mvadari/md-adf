@@ -1,11 +1,19 @@
 from __future__ import annotations
 
-import re
-from typing import Any, NamedTuple, cast
+from typing import Any, cast
+
+import mistune
 
 from ..adf.types import AdfDocument, AdfNode
 from ..diagnostics.diagnostic import Diagnostic
 from ..options import ConversionOptions, ConversionResult
+
+MarkdownNode = dict[str, Any]
+
+MARKDOWN_PARSER = mistune.create_markdown(
+    renderer="ast",
+    plugins=["strikethrough", "table", "task_lists"],
+)
 
 
 def markdown_to_adf(
@@ -13,9 +21,8 @@ def markdown_to_adf(
 ) -> ConversionResult[AdfDocument]:
     _ = options
     diagnostics: list[Diagnostic] = []
-    normalized = markdown.replace("\r\n", "\n").replace("\r", "\n")
-    lines = normalized.split("\n")
-    content, _next = _parse_blocks(lines, 0, len(lines), diagnostics)
+    tree = cast(list[MarkdownNode], MARKDOWN_PARSER(markdown))
+    content = _block_children(tree)
 
     return ConversionResult(
         value={"version": 1, "type": "doc", "content": content},
@@ -23,414 +30,228 @@ def markdown_to_adf(
     )
 
 
-class _BlockParseResult(NamedTuple):
-    nodes: list[AdfNode]
-    next: int
+def _block_children(nodes: list[MarkdownNode]) -> list[AdfNode]:
+    output: list[AdfNode] = []
+    for node in nodes:
+        output.extend(_block_node(node))
+    return output
 
 
-class _InlineParseResult(NamedTuple):
-    nodes: list[AdfNode]
-    next: int
-    closed: bool
+def _block_node(node: MarkdownNode) -> list[AdfNode]:
+    node_type = node.get("type")
 
+    if node_type == "blank_line":
+        return []
 
-class _ListMarker(NamedTuple):
-    ordered: bool
-    marker_length: int
-    start: int
+    if node_type == "paragraph":
+        return [{"type": "paragraph", "content": _inline_children(_children(node))}]
 
+    if node_type == "block_text":
+        return [{"type": "paragraph", "content": _inline_children(_children(node))}]
 
-def _parse_blocks(
-    lines: list[str],
-    start: int,
-    end: int,
-    diagnostics: list[Diagnostic],
-    base_indent: int = 0,
-) -> _BlockParseResult:
-    nodes: list[AdfNode] = []
-    index = start
-
-    while index < end:
-        line = lines[index] if index < len(lines) else ""
-        if line.strip() == "":
-            index += 1
-            continue
-
-        indent = _count_indent(line)
-        if indent < base_indent:
-            break
-
-        trimmed = line[base_indent:]
-        heading = re.match(r"^(#{1,6})[ \t]+(.+?)\s*#*\s*$", trimmed)
-        if heading:
-            nodes.append(
-                {
-                    "type": "heading",
-                    "attrs": {"level": len(heading.group(1))},
-                    "content": _parse_inline_content(heading.group(2), diagnostics),
-                }
-            )
-            index += 1
-            continue
-
-        if re.match(r"^(?:-{3,}|\*{3,}|_{3,})\s*$", trimmed):
-            nodes.append({"type": "rule"})
-            index += 1
-            continue
-
-        fence = re.match(r"^(`{3,}|~{3,})([^`]*)$", trimmed)
-        if fence:
-            fence_marker = fence.group(1)
-            fence_char = fence_marker[0]
-            language = (fence.group(2).strip().split() or [""])[0]
-            code_lines: list[str] = []
-            index += 1
-            while index < end:
-                current_line = lines[index] if index < len(lines) else ""
-                candidate = current_line[base_indent:]
-                if candidate.startswith(fence_char * len(fence_marker)):
-                    break
-                code_lines.append(
-                    current_line[min(base_indent, _count_indent(current_line)) :]
-                )
-                index += 1
-            if index >= end:
-                diagnostics.append(
-                    Diagnostic(
-                        severity="warning",
-                        code="UnclosedCodeFence",
-                        message=(
-                            "Markdown code fence was not closed; consumed the "
-                            "rest of the document."
-                        ),
-                    )
-                )
-            else:
-                index += 1
-            node: AdfNode = {
-                "type": "codeBlock",
-                "content": [{"type": "text", "text": "\n".join(code_lines)}],
-            }
-            if language:
-                node["attrs"] = {"language": language}
-            nodes.append(node)
-            continue
-
-        if re.match(r"^>[ \t]?", trimmed):
-            quote_lines: list[str] = []
-            while index < end:
-                current = (lines[index] if index < len(lines) else "")[base_indent:]
-                if current.strip() != "" and not re.match(r"^>[ \t]?", current):
-                    break
-                quote_lines.append(re.sub(r"^>[ \t]?", "", current, count=1))
-                index += 1
-            quote_content, _ = _parse_blocks(quote_lines, 0, len(quote_lines), diagnostics)
-            nodes.append({"type": "blockquote", "content": quote_content})
-            continue
-
-        list_marker = _parse_list_marker(trimmed)
-        if list_marker is not None:
-            node, next_index = _parse_list(
-                lines, index, end, diagnostics, base_indent, list_marker
-            )
-            nodes.append(node)
-            index = next_index
-            continue
-
-        paragraph_lines: list[str] = []
-        while index < end:
-            current = lines[index] if index < len(lines) else ""
-            current_trimmed = current[base_indent:]
-            if current.strip() == "":
-                break
-            if index != start and _starts_block(current_trimmed):
-                break
-            paragraph_lines.append(current_trimmed)
-            index += 1
-        nodes.append(
+    if node_type == "heading":
+        attrs = _attrs(node)
+        level = min(6, max(1, int(attrs.get("level", 1))))
+        return [
             {
-                "type": "paragraph",
-                "content": _parse_inline_content(
-                    _join_paragraph_lines(paragraph_lines), diagnostics
-                ),
+                "type": "heading",
+                "attrs": {"level": level},
+                "content": _inline_children(_children(node)),
             }
-        )
+        ]
 
-    return _BlockParseResult(nodes, index)
+    if node_type == "thematic_break":
+        return [{"type": "rule"}]
 
+    if node_type == "block_quote":
+        return [{"type": "blockquote", "content": _block_children(_children(node))}]
 
-def _starts_block(line: str) -> bool:
-    return (
-        re.match(r"^(#{1,6})[ \t]+", line) is not None
-        or re.match(r"^(?:-{3,}|\*{3,}|_{3,})\s*$", line) is not None
-        or re.match(r"^(`{3,}|~{3,})", line) is not None
-        or re.match(r"^>[ \t]?", line) is not None
-        or _parse_list_marker(line) is not None
-    )
+    if node_type == "list":
+        return [_list_node(node)]
 
+    if node_type == "block_code":
+        return [_code_block_node(node)]
 
-def _parse_list(
-    lines: list[str],
-    start: int,
-    end: int,
-    diagnostics: list[Diagnostic],
-    base_indent: int,
-    first_marker: _ListMarker,
-) -> tuple[AdfNode, int]:
-    list_type = "orderedList" if first_marker.ordered else "bulletList"
-    items: list[AdfNode] = []
-    index = start
+    if node_type == "table":
+        return [_table_node(node)]
 
-    while index < end:
-        line = lines[index] if index < len(lines) else ""
-        if line.strip() == "":
-            index += 1
-            continue
-        if _count_indent(line) != base_indent:
-            break
-        marker = _parse_list_marker(line[base_indent:])
-        if marker is None or marker.ordered != first_marker.ordered:
-            break
+    if node_type == "block_html":
+        return _paragraph_from_text(str(node.get("raw", "")))
 
-        item_lines = [line[base_indent + marker.marker_length :]]
-        index += 1
-        while index < end:
-            current = lines[index] if index < len(lines) else ""
-            if current.strip() == "":
-                item_lines.append("")
-                index += 1
-                continue
-            indent = _count_indent(current)
-            if indent == base_indent and _parse_list_marker(current[base_indent:]):
-                break
-            if indent < base_indent + 2:
-                break
-            item_lines.append(current[min(base_indent + 2, indent) :])
-            index += 1
-
-        item_content, _ = _parse_blocks(item_lines, 0, len(item_lines), diagnostics)
-        items.append({"type": "listItem", "content": item_content})
-
-    node: AdfNode = {"type": list_type, "content": items}
-    if first_marker.ordered and first_marker.start != 1:
-        node["attrs"] = {"order": first_marker.start}
-    return node, index
+    return _text_fallback_block(node)
 
 
-def _parse_list_marker(line: str) -> _ListMarker | None:
-    bullet = re.match(r"^[-+*][ \t]+", line)
-    if bullet:
-        return _ListMarker(False, len(bullet.group(0)), 1)
-    ordered = re.match(r"^(\d{1,9})[.)][ \t]+", line)
-    if ordered:
-        return _ListMarker(True, len(ordered.group(0)), int(ordered.group(1)))
-    return None
+def _list_node(node: MarkdownNode) -> AdfNode:
+    attrs = _attrs(node)
+    ordered = bool(attrs.get("ordered", False))
+    list_node: AdfNode = {
+        "type": "orderedList" if ordered else "bulletList",
+        "content": [
+            _list_item_node(child)
+            for child in _children(node)
+            if child.get("type") in {"list_item", "task_list_item"}
+        ],
+    }
+    start = attrs.get("start")
+    if ordered and isinstance(start, int) and start != 1:
+        list_node["attrs"] = {"order": start}
+    return list_node
 
 
-def _join_paragraph_lines(lines: list[str]) -> str:
-    result = ""
-    for index, line in enumerate(lines):
-        if index > 0 and not result.endswith("\\\n"):
-            result += " "
-        if line.endswith("\\") and not line.endswith("\\\\"):
-            result += f"{line[:-1]}\\\n"
-        else:
-            result += line
-    return result
+def _list_item_node(node: MarkdownNode) -> AdfNode:
+    return {"type": "listItem", "content": _block_children(_children(node))}
 
 
-def _count_indent(line: str) -> int:
-    count = 0
-    for char in line:
-        if char == " ":
-            count += 1
-        elif char == "\t":
-            count += 4
-        else:
-            break
-    return count
+def _code_block_node(node: MarkdownNode) -> AdfNode:
+    code_block: AdfNode = {
+        "type": "codeBlock",
+        "content": [{"type": "text", "text": str(node.get("raw", "")).removesuffix("\n")}],
+    }
+    info = _attrs(node).get("info")
+    if isinstance(info, str) and info.strip():
+        code_block["attrs"] = {"language": info.strip().split()[0]}
+    return code_block
 
 
-def _parse_inline_content(markdown: str, diagnostics: list[Diagnostic]) -> list[AdfNode]:
-    return _parse_inlines(markdown, 0, diagnostics, []).nodes
+def _table_node(node: MarkdownNode) -> AdfNode:
+    rows: list[AdfNode] = []
+    alignments: list[Any] = []
 
-
-def _parse_inlines(
-    source: str,
-    start: int,
-    diagnostics: list[Diagnostic],
-    terminators: list[str],
-) -> _InlineParseResult:
-    nodes: list[AdfNode] = []
-    index = start
-
-    while index < len(source):
-        terminator = next(
-            (candidate for candidate in terminators if source.startswith(candidate, index)),
-            None,
-        )
-        if terminator is not None:
-            return _InlineParseResult(nodes, index + len(terminator), True)
-
-        if source.startswith("\\\n", index):
-            nodes.append({"type": "hardBreak"})
-            index += 2
-            continue
-
-        if source[index] == "\\" and index + 1 < len(source):
-            _add_text(nodes, source[index + 1])
-            index += 2
-            continue
-
-        code = _parse_code_span(source, index)
-        if code is not None:
-            text, next_index = code
-            _add_text(nodes, text, [{"type": "code"}])
-            index = next_index
-            continue
-
-        if source.startswith("**", index):
-            parsed = _parse_inlines(source, index + 2, diagnostics, ["**"])
-            if parsed.closed:
-                nodes.extend(_add_mark(parsed.nodes, {"type": "strong"}))
-                index = parsed.next
-                continue
-
-        if source.startswith("~~", index):
-            parsed = _parse_inlines(source, index + 2, diagnostics, ["~~"])
-            if parsed.closed:
-                nodes.extend(_add_mark(parsed.nodes, {"type": "strike"}))
-                index = parsed.next
-                continue
-
-        if source[index] == "*":
-            parsed = _parse_inlines(source, index + 1, diagnostics, ["*"])
-            if parsed.closed:
-                nodes.extend(_add_mark(parsed.nodes, {"type": "em"}))
-                index = parsed.next
-                continue
-
-        link = _parse_link(source, index, diagnostics)
-        if link is not None:
-            link_nodes, next_index = link
-            nodes.extend(link_nodes)
-            index = next_index
-            continue
-
-        _add_text(nodes, source[index])
-        index += 1
-
-    return _InlineParseResult(nodes, index, len(terminators) == 0)
-
-
-def _parse_code_span(source: str, index: int) -> tuple[str, int] | None:
-    opener_match = re.match(r"^`+", source[index:])
-    if opener_match is None:
-        return None
-    opener = opener_match.group(0)
-    close = source.find(opener, index + len(opener))
-    if close == -1:
-        return None
-    text = source[index + len(opener) : close]
-    if text.startswith(" ") and text.endswith(" ") and len(text.strip()) > 0:
-        text = text[1:-1]
-    return text, close + len(opener)
-
-
-def _parse_link(
-    source: str, index: int, diagnostics: list[Diagnostic]
-) -> tuple[list[AdfNode], int] | None:
-    if source[index] != "[":
-        return None
-    label_end = _find_unescaped(source, "]", index + 1)
-    if label_end == -1 or label_end + 1 >= len(source) or source[label_end + 1] != "(":
-        return None
-    destination_end = _find_link_close(source, label_end + 2)
-    if destination_end == -1:
-        return None
-
-    label = source[index + 1 : label_end]
-    raw_destination = source[label_end + 2 : destination_end].strip()
-    match = re.match(r'^(\S+?)(?:\s+"([^"]*)")?$', raw_destination)
-    if match is None:
-        diagnostics.append(
-            Diagnostic(
-                severity="warning",
-                code="InvalidLinkSyntax",
-                message=(
-                    "Markdown link destination was invalid; rendered link label "
-                    "as plain text."
-                ),
+    for table_child in _children(node):
+        if table_child.get("type") == "table_head":
+            rows.append(_table_row_node(table_child, header=True))
+            alignments = [
+                _attrs(cell).get("align") for cell in _children(table_child)
+            ]
+        elif table_child.get("type") == "table_body":
+            rows.extend(
+                _table_row_node(row, header=False) for row in _children(table_child)
             )
-        )
-        return _parse_inline_content(label, diagnostics), destination_end + 1
 
-    attrs: dict[str, Any] = {"href": _unescape_markdown(match.group(1))}
-    if match.group(2) is not None:
-        attrs["title"] = match.group(2)
-    return (
-        _add_mark(_parse_inline_content(label, diagnostics), {"type": "link", "attrs": attrs}),
-        destination_end + 1,
-    )
+    table: AdfNode = {"type": "table", "content": rows}
+    if any(align is not None for align in alignments):
+        table["attrs"] = {"columnAlignments": alignments}
+    return table
 
 
-def _find_unescaped(source: str, needle: str, start: int) -> int:
-    index = start
-    while index < len(source):
-        if source[index] == "\\" and index + 1 < len(source):
-            index += 2
+def _table_row_node(node: MarkdownNode, header: bool) -> AdfNode:
+    cells: list[AdfNode] = []
+    for cell in _children(node):
+        if cell.get("type") != "table_cell":
             continue
-        if source[index] == needle:
-            return index
-        index += 1
-    return -1
+        cell_node: AdfNode = {
+            "type": "tableHeader" if header else "tableCell",
+            "content": [
+                {"type": "paragraph", "content": _inline_children(_children(cell))}
+            ],
+        }
+        cells.append(cell_node)
+    return {"type": "tableRow", "content": cells}
 
 
-def _find_link_close(source: str, start: int) -> int:
-    escaped = False
-    for index in range(start, len(source)):
-        char = source[index]
-        if escaped:
-            escaped = False
-        elif char == "\\":
-            escaped = True
-        elif char == ")":
-            return index
-    return -1
+def _text_fallback_block(node: MarkdownNode) -> list[AdfNode]:
+    text = _plain_text(node)
+    return _paragraph_from_text(text) if text else []
 
 
-def _add_text(
-    nodes: list[AdfNode], text: str, marks: list[dict[str, Any]] | None = None
-) -> None:
-    if len(text) == 0:
-        return
-    previous = nodes[-1] if nodes else None
-    normalized_marks = marks or []
-    if (
-        previous is not None
-        and previous.get("type") == "text"
-        and "text" in previous
-        and previous.get("marks", []) == normalized_marks
-    ):
-        previous["text"] = previous.get("text", "") + text
-        return
+def _paragraph_from_text(text: str) -> list[AdfNode]:
+    if not text:
+        return []
+    return [{"type": "paragraph", "content": [{"type": "text", "text": text}]}]
+
+
+def _inline_children(
+    nodes: list[MarkdownNode], marks: list[dict[str, Any]] | None = None
+) -> list[AdfNode]:
+    output: list[AdfNode] = []
+    active_marks = marks or []
+    for node in nodes:
+        for child in _inline_node(node, active_marks):
+            _append_inline(output, child)
+    return output
+
+
+def _inline_node(node: MarkdownNode, marks: list[dict[str, Any]]) -> list[AdfNode]:
+    node_type = node.get("type")
+
+    if node_type == "text":
+        return _text_node(str(node.get("raw", "")).replace("\n", " "), marks)
+
+    if node_type == "emphasis":
+        return _inline_children(_children(node), [*marks, {"type": "em"}])
+
+    if node_type == "strong":
+        return _inline_children(_children(node), [*marks, {"type": "strong"}])
+
+    if node_type == "strikethrough":
+        return _inline_children(_children(node), [*marks, {"type": "strike"}])
+
+    if node_type == "codespan":
+        return _text_node(str(node.get("raw", "")), [*marks, {"type": "code"}])
+
+    if node_type == "link":
+        attrs = _attrs(node)
+        link_attrs: dict[str, Any] = {"href": attrs.get("url", "")}
+        title = attrs.get("title")
+        if isinstance(title, str) and title:
+            link_attrs["title"] = title
+        return _inline_children(_children(node), [*marks, {"type": "link", "attrs": link_attrs}])
+
+    if node_type == "linebreak":
+        return [{"type": "hardBreak"}]
+
+    if node_type == "softbreak":
+        return _text_node(" ", marks)
+
+    if node_type == "image":
+        attrs = _attrs(node)
+        image_link_attrs: dict[str, Any] = {"href": attrs.get("url", "")}
+        title = attrs.get("title")
+        if isinstance(title, str) and title:
+            image_link_attrs["title"] = title
+        alt = str(attrs.get("alt", attrs.get("url", "")))
+        return _text_node(alt, [*marks, {"type": "link", "attrs": image_link_attrs}])
+
+    if node_type == "inline_html":
+        return _text_node(str(node.get("raw", "")), marks)
+
+    return _text_node(_plain_text(node), marks)
+
+
+def _text_node(text: str, marks: list[dict[str, Any]]) -> list[AdfNode]:
+    if not text:
+        return []
     node: AdfNode = {"type": "text", "text": text}
     if marks:
         node["marks"] = marks
+    return [node]
+
+
+def _append_inline(nodes: list[AdfNode], node: AdfNode) -> None:
+    previous = nodes[-1] if nodes else None
+    if (
+        previous is not None
+        and node.get("type") == "text"
+        and previous.get("type") == "text"
+        and previous.get("marks", []) == node.get("marks", [])
+    ):
+        previous["text"] = previous.get("text", "") + node.get("text", "")
+        return
     nodes.append(node)
 
 
-def _add_mark(nodes: list[AdfNode], mark: dict[str, Any]) -> list[AdfNode]:
-    marked: list[AdfNode] = []
-    for node in nodes:
-        if node.get("type") == "text":
-            marked_node = cast(AdfNode, dict(node))
-            marked_node["marks"] = [*node.get("marks", []), mark]
-            marked.append(marked_node)
-        else:
-            marked.append(node)
-    return marked
+def _plain_text(node: MarkdownNode) -> str:
+    raw = node.get("raw")
+    if isinstance(raw, str):
+        return raw
+    return "".join(_plain_text(child) for child in _children(node))
 
 
-def _unescape_markdown(value: str) -> str:
-    return re.sub(r"\\([\\`*_{}\[\]()#+\-.!|<>~\s])", r"\1", value)
+def _children(node: MarkdownNode) -> list[MarkdownNode]:
+    children = node.get("children")
+    return cast(list[MarkdownNode], children if isinstance(children, list) else [])
+
+
+def _attrs(node: MarkdownNode) -> dict[str, Any]:
+    attrs = node.get("attrs")
+    return cast(dict[str, Any], attrs if isinstance(attrs, dict) else {})

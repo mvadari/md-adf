@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.commonmark.setext-softbreak",
+  "direction": "md-to-adf",
+  "description": "Converts parser-sensitive CommonMark setext headings, soft breaks, and nested marks.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["heading", "paragraph", "text", "strong", "link"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}
