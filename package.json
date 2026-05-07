@@ -20,7 +20,7 @@
     "prepack": "node tools/release/guard-root-package.mjs",
     "prepublishOnly": "node tools/release/guard-root-package.mjs",
     "publish:js": "npm publish --workspace packages/js --access public --registry=https://registry.npmjs.org/",
-    "publish:py": "poetry -C packages/python publish",
+    "publish:py": "poetry-C packages/python build && poetry -C packages/python publish",
     "test:packages": "node tools/release/smoke-packages.mjs",
     "test": "npm run validate:fixtures && npm run conformance",
     "test:js": "npm run test --workspace packages/js",
