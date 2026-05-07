@@ -26,7 +26,7 @@ npm run build --workspace packages/js
 - Inspect the dry-run package contents:
 
 ```sh
-npm pack --workspace packages/js --dry-run
+npm run pack:js -- --dry-run
 ```
 
 - Confirm the packed package includes `README.md`; the smoke test also verifies this by checking for `package/README.md` in the npm tarball.
@@ -48,7 +48,7 @@ npm whoami
 - Publish only after the final release commit and tag are ready:
 
 ```sh
-npm publish --workspace packages/js --access public
+npm run publish:js
 ```
 
 ## Post-Publish

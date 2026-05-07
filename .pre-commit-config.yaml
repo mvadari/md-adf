@@ -1,0 +1,15 @@
+repos:
+  - repo: local
+    hooks:
+      - id: fix-registry-urls
+        name: Replace non-public registry URLs in package-lock.json
+        entry: perl -pi -e 's|"resolved"\x3a "https://(?!registry\.npmjs\.org/)[^"]*?/((?:@[^/]+/)?[^/]+/-/[^"]+)"|"resolved"\x3a "https://registry.npmjs.org/$1"|g'
+        language: system
+        files: package-lock\.json$
+
+      - id: dashboard-lint
+        name: Lint & format dashboard
+        entry: /bin/zsh -lc 'cd dashboard && npm run lint:hook'
+        language: system
+        files: ^dashboard/src/
+        pass_filenames: false

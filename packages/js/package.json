@@ -1,6 +1,6 @@
 {
   "name": "md-adf",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Markdown-ADF converter for JavaScript and TypeScript.",
   "license": "MIT",
   "type": "module",
@@ -27,6 +27,7 @@
     "lint:filenames": "node ../../tools/lint-ts-filenames.mjs bin src test",
     "lint:format": "prettier --check \"{bin,src,test}/**/*.{ts,mjs}\" package.json README.md tsconfig.json",
     "lint:types": "tsc -p tsconfig.json --noEmit",
+    "prepack": "npm run build",
     "test": "npm run build && node test/conformance.test.mjs && node --test test/adf-validation.test.mjs test/options.test.mjs test/cli.test.mjs"
   },
   "devDependencies": {
