@@ -36,7 +36,7 @@ npm run test:packages
 - Publish only after the final release commit and tag are ready:
 
 ```sh
-poetry -C packages/python publish
+npm run publish:py
 ```
 
 ## Post-Publish
