@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.media-fallback",
+  "direction": "adf-to-md",
+  "description": "Renders ADF external media as a Markdown link fallback with diagnostics.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["mediaSingle", "media", "mediaFallback"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

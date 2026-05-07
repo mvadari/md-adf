@@ -26,6 +26,11 @@ const supportedNodes = new Set([
   "listItem",
   "codeBlock",
   "rule",
+  "table",
+  "taskList",
+  "mediaGroup",
+  "mediaSingle",
+  "media",
   "text",
   "hardBreak",
 ]);
@@ -124,6 +129,16 @@ function renderBlock(
     }
     case "rule":
       return "---";
+    case "table":
+      return renderTable(node, diagnostics, path);
+    case "taskList":
+      return renderTaskList(node, diagnostics, path);
+    case "mediaGroup":
+      return renderMediaGroup(node, diagnostics, path);
+    case "mediaSingle":
+      return renderMediaSingle(node, diagnostics, path);
+    case "media":
+      return renderMedia(node, diagnostics, path);
     default:
       diagnostics.push({
         severity: "warning",
@@ -133,6 +148,219 @@ function renderBlock(
       });
       return "";
   }
+}
+
+function renderTable(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const rows = node.content ?? [];
+  const unsupported = (message: string, detailPath = path): string => {
+    diagnostics.push({
+      severity: "warning",
+      code: "UnsupportedComplexTable",
+      path: detailPath,
+      message,
+      fallback: "omit",
+    });
+    return "";
+  };
+
+  if (rows.length === 0) {
+    return unsupported("ADF table without rows was omitted.");
+  }
+  if (rows.some((row) => row.type !== "tableRow")) {
+    return unsupported("ADF table contains non-row children and was omitted.");
+  }
+
+  const width = rows[0]?.content?.length ?? 0;
+  if (width === 0) {
+    return unsupported("ADF table without cells was omitted.");
+  }
+  if (rows.some((row) => (row.content ?? []).length !== width)) {
+    return unsupported("Non-rectangular ADF table was omitted.");
+  }
+
+  const renderedRows: string[][] = [];
+  for (const [rowIndex, row] of rows.entries()) {
+    const cells = row.content ?? [];
+    if (
+      rowIndex === 0 &&
+      cells.some((cell) => cell.type !== "tableHeader")
+    ) {
+      return unsupported("ADF table first row cannot be used as a GFM header row.");
+    }
+
+    const renderedCells: string[] = [];
+    for (const [cellIndex, cell] of cells.entries()) {
+      if (cell.type !== "tableHeader" && cell.type !== "tableCell") {
+        return unsupported(
+          "ADF table contains non-cell children and was omitted.",
+          `${path}/content/${rowIndex}/content/${cellIndex}`,
+        );
+      }
+      const attrs = cell.attrs ?? {};
+      if (
+        (attrs.rowspan !== undefined && attrs.rowspan !== 1) ||
+        (attrs.colspan !== undefined && attrs.colspan !== 1)
+      ) {
+        return unsupported(
+          "ADF table with row or column spans was omitted.",
+          `${path}/content/${rowIndex}/content/${cellIndex}`,
+        );
+      }
+
+      const cellContent = cell.content ?? [];
+      if (
+        cellContent.length > 1 ||
+        (cellContent.length === 1 && cellContent[0]?.type !== "paragraph")
+      ) {
+        return unsupported(
+          "ADF table cell with block content was omitted.",
+          `${path}/content/${rowIndex}/content/${cellIndex}`,
+        );
+      }
+      if (
+        (cellContent[0]?.content ?? []).some(
+          (inline) => inline.type !== "text",
+        )
+      ) {
+        return unsupported(
+          "ADF table cell with unsupported inline content was omitted.",
+          `${path}/content/${rowIndex}/content/${cellIndex}`,
+        );
+      }
+
+      renderedCells.push(
+        escapeTableCellMarkdown(
+          renderInlineContent(
+            cellContent[0]?.content ?? [],
+            diagnostics,
+            `${path}/content/${rowIndex}/content/${cellIndex}/content/0/content`,
+          ),
+        ),
+      );
+    }
+    renderedRows.push(renderedCells);
+  }
+
+  const header = renderTableRow(renderedRows[0] ?? []);
+  const separator = renderTableRow(Array.from({ length: width }, () => "---"));
+  const body = renderedRows.slice(1).map((row) => renderTableRow(row));
+  return [header, separator, ...body].join("\n");
+}
+
+function renderTableRow(cells: string[]): string {
+  return `| ${cells.join(" | ")} |`;
+}
+
+function escapeTableCellMarkdown(markdown: string): string {
+  return markdown.replace(/\n/g, " ").replace(/(^|[^\\])\|/g, "$1\\|");
+}
+
+function renderTaskList(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  return (node.content ?? [])
+    .map((item, index) => {
+      if (item.type !== "taskItem" && item.type !== "blockTaskItem") {
+        diagnostics.push({
+          severity: "warning",
+          code: "UnsupportedTaskListItem",
+          path: `${path}/content/${index}`,
+          message: `Unsupported task list child '${item.type}' was omitted.`,
+          fallback: "omit",
+        });
+        return "";
+      }
+      const state = item.attrs?.state === "DONE" ? "x" : " ";
+      const content =
+        item.type === "blockTaskItem"
+          ? renderBlocks(item.content ?? [], diagnostics, `${path}/content/${index}/content`)
+          : renderInlineContent(item.content ?? [], diagnostics, `${path}/content/${index}/content`);
+      return `- [${state}] ${indentListContinuation(content)}`;
+    })
+    .filter((item) => item.length > 0)
+    .join("\n");
+}
+
+function renderMediaGroup(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  return (node.content ?? [])
+    .map((child, index) => renderMedia(child, diagnostics, `${path}/content/${index}`))
+    .filter((item) => item.length > 0)
+    .join("\n\n");
+}
+
+function renderMediaSingle(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const media = (node.content ?? []).find((child) => child.type === "media");
+  if (!media) {
+    diagnostics.push({
+      severity: "warning",
+      code: "UnsupportedMedia",
+      path,
+      message: "ADF mediaSingle without media content was omitted.",
+      fallback: "omit",
+    });
+    return "";
+  }
+  return renderMedia(media, diagnostics, `${path}/content/0`);
+}
+
+function renderMedia(
+  node: AdfNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): string {
+  const attrs = node.attrs ?? {};
+  const url =
+    attrs.type === "external" && typeof attrs.url === "string"
+      ? attrs.url
+      : linkMarkHref(node.marks ?? []);
+  const label =
+    typeof attrs.alt === "string" && attrs.alt.length > 0
+      ? attrs.alt
+      : typeof url === "string" && url.length > 0
+        ? url
+        : typeof attrs.id === "string" && attrs.id.length > 0
+          ? attrs.id
+          : "media";
+
+  if (typeof url === "string" && url.length > 0) {
+    diagnostics.push({
+      severity: "warning",
+      code: "UnsupportedMedia",
+      path,
+      message: "ADF media was rendered as a Markdown link fallback.",
+      fallback: "link",
+    });
+    return `[${escapeMarkdownText(label)}](${escapeLinkDestination(url)})`;
+  }
+
+  diagnostics.push({
+    severity: "warning",
+    code: "UnsupportedMedia",
+    path,
+    message: "ADF media without a resolvable URL was rendered as text.",
+    fallback: "text",
+  });
+  return escapeMarkdownText(label);
+}
+
+function linkMarkHref(marks: AdfMark[]): string | undefined {
+  const link = marks.find((mark) => mark.type === "link");
+  const attrs = link?.attrs as Record<string, unknown> | undefined;
+  return typeof attrs?.href === "string" ? attrs.href : undefined;
 }
 
 function renderList(

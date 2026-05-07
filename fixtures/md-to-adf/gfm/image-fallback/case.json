@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.image-fallback",
+  "direction": "md-to-adf",
+  "description": "Converts Markdown images to linked text fallback with diagnostics.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["image", "link", "paragraph", "text", "mediaFallback"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

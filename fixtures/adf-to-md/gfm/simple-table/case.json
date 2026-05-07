@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.simple-table",
+  "direction": "adf-to-md",
+  "description": "Converts a simple rectangular ADF table to a GFM pipe table.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["table", "tableRow", "tableHeader", "tableCell", "paragraph", "text", "strong"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

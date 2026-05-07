@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedMedia",
+    "path": "/content/0/content/0",
+    "message": "ADF media was rendered as a Markdown link fallback.",
+    "fallback": "link"
+  }
+]

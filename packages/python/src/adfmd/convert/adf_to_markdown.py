@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from ..adf.types import AdfNode
@@ -23,6 +24,11 @@ SUPPORTED_NODES = {
     "listItem",
     "codeBlock",
     "rule",
+    "table",
+    "taskList",
+    "mediaGroup",
+    "mediaSingle",
+    "media",
     "text",
     "hardBreak",
 }
@@ -113,6 +119,21 @@ def render_block(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
     if node_type == "rule":
         return "---"
 
+    if node_type == "table":
+        return render_table(node, diagnostics, path)
+
+    if node_type == "taskList":
+        return render_task_list(node, diagnostics, path)
+
+    if node_type == "mediaGroup":
+        return render_media_group(node, diagnostics, path)
+
+    if node_type == "mediaSingle":
+        return render_media_single(node, diagnostics, path)
+
+    if node_type == "media":
+        return render_media(node, diagnostics, path)
+
     diagnostics.append(
         Diagnostic(
             severity="warning",
@@ -122,6 +143,188 @@ def render_block(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
         )
     )
     return ""
+
+
+def render_table(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    rows = node.get("content", [])
+
+    def unsupported(message: str, detail_path: str = path) -> str:
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="UnsupportedComplexTable",
+                path=detail_path,
+                message=message,
+                fallback="omit",
+            )
+        )
+        return ""
+
+    if not rows:
+        return unsupported("ADF table without rows was omitted.")
+    if any(row.get("type") != "tableRow" for row in rows):
+        return unsupported("ADF table contains non-row children and was omitted.")
+
+    width = len(rows[0].get("content", []))
+    if width == 0:
+        return unsupported("ADF table without cells was omitted.")
+    if any(len(row.get("content", [])) != width for row in rows):
+        return unsupported("Non-rectangular ADF table was omitted.")
+
+    rendered_rows: list[list[str]] = []
+    for row_index, row in enumerate(rows):
+        cells = row.get("content", [])
+        if row_index == 0 and any(cell.get("type") != "tableHeader" for cell in cells):
+            return unsupported("ADF table first row cannot be used as a GFM header row.")
+
+        rendered_cells: list[str] = []
+        for cell_index, cell in enumerate(cells):
+            cell_path = f"{path}/content/{row_index}/content/{cell_index}"
+            if cell.get("type") not in {"tableHeader", "tableCell"}:
+                return unsupported("ADF table contains non-cell children and was omitted.", cell_path)
+
+            attrs = _attrs(cell)
+            if (
+                ("rowspan" in attrs and attrs.get("rowspan") != 1)
+                or ("colspan" in attrs and attrs.get("colspan") != 1)
+            ):
+                return unsupported("ADF table with row or column spans was omitted.", cell_path)
+
+            cell_content = cell.get("content", [])
+            if len(cell_content) > 1 or (
+                len(cell_content) == 1 and cell_content[0].get("type") != "paragraph"
+            ):
+                return unsupported("ADF table cell with block content was omitted.", cell_path)
+
+            inline_content = cell_content[0].get("content", []) if cell_content else []
+            if any(inline.get("type") != "text" for inline in inline_content):
+                return unsupported(
+                    "ADF table cell with unsupported inline content was omitted.",
+                    cell_path,
+                )
+
+            rendered_cells.append(
+                escape_table_cell_markdown(
+                    render_inline_content(
+                        inline_content,
+                        diagnostics,
+                        f"{cell_path}/content/0/content",
+                    )
+                )
+            )
+        rendered_rows.append(rendered_cells)
+
+    header = render_table_row(rendered_rows[0])
+    separator = render_table_row(["---"] * width)
+    body = [render_table_row(row) for row in rendered_rows[1:]]
+    return "\n".join([header, separator, *body])
+
+
+def render_table_row(cells: list[str]) -> str:
+    return f"| {' | '.join(cells)} |"
+
+
+def escape_table_cell_markdown(markdown: str) -> str:
+    return re.sub(r"(^|[^\\])\|", r"\1\\|", markdown.replace("\n", " "))
+
+
+def render_task_list(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    items: list[str] = []
+    for index, item in enumerate(node.get("content", [])):
+        item_type = item.get("type")
+        if item_type not in {"taskItem", "blockTaskItem"}:
+            diagnostics.append(
+                Diagnostic(
+                    severity="warning",
+                    code="UnsupportedTaskListItem",
+                    path=f"{path}/content/{index}",
+                    message=f"Unsupported task list child '{item_type}' was omitted.",
+                    fallback="omit",
+                )
+            )
+            continue
+
+        state = "x" if _attrs(item).get("state") == "DONE" else " "
+        content = (
+            render_blocks(item.get("content", []), diagnostics, f"{path}/content/{index}/content")
+            if item_type == "blockTaskItem"
+            else render_inline_content(
+                item.get("content", []), diagnostics, f"{path}/content/{index}/content"
+            )
+        )
+        items.append(f"- [{state}] {indent_list_continuation(content)}")
+    return "\n".join(item for item in items if len(item) > 0)
+
+
+def render_media_group(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    return "\n\n".join(
+        block
+        for block in (
+            render_media(child, diagnostics, f"{path}/content/{index}")
+            for index, child in enumerate(node.get("content", []))
+        )
+        if len(block) > 0
+    )
+
+
+def render_media_single(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    media = next((child for child in node.get("content", []) if child.get("type") == "media"), None)
+    if media is None:
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="UnsupportedMedia",
+                path=path,
+                message="ADF mediaSingle without media content was omitted.",
+                fallback="omit",
+            )
+        )
+        return ""
+    return render_media(media, diagnostics, f"{path}/content/0")
+
+
+def render_media(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    attrs = _attrs(node)
+    url = attrs.get("url") if attrs.get("type") == "external" else link_mark_href(node.get("marks", []))
+    label = (
+        attrs.get("alt")
+        if isinstance(attrs.get("alt"), str) and attrs.get("alt")
+        else url
+        if isinstance(url, str) and url
+        else attrs.get("id")
+        if isinstance(attrs.get("id"), str) and attrs.get("id")
+        else "media"
+    )
+
+    if isinstance(url, str) and url:
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="UnsupportedMedia",
+                path=path,
+                message="ADF media was rendered as a Markdown link fallback.",
+                fallback="link",
+            )
+        )
+        return f"[{escape_markdown_text(str(label))}]({escape_link_destination(url)})"
+
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="UnsupportedMedia",
+            path=path,
+            message="ADF media without a resolvable URL was rendered as text.",
+            fallback="text",
+        )
+    )
+    return escape_markdown_text(str(label))
+
+
+def link_mark_href(marks: list[dict[str, Any]]) -> str | None:
+    link = next((mark for mark in marks if mark.get("type") == "link"), None)
+    attrs = link.get("attrs") if isinstance(link, dict) else None
+    href = attrs.get("href") if isinstance(attrs, dict) else None
+    return href if isinstance(href, str) else None
 
 
 def render_list(

@@ -1,0 +1,13 @@
+{
+  "id": "adf-to-md.gfm.complex-table",
+  "direction": "adf-to-md",
+  "description": "Reports and omits ADF tables that cannot be rendered as GFM pipe tables.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["table", "tableRow", "tableHeader", "tableCell", "rowspan", "unsupportedComplexTable"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

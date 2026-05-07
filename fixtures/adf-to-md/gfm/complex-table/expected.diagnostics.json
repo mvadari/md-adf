@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "UnsupportedComplexTable",
+    "path": "/content/1/content/1/content/0",
+    "message": "ADF table with row or column spans was omitted.",
+    "fallback": "omit"
+  }
+]

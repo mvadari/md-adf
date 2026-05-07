@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.task-list",
+  "direction": "md-to-adf",
+  "description": "Converts simple GFM task lists to schema-valid ADF taskList nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["taskList", "taskItem", "text"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

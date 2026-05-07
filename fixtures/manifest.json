@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-07T15:56:05.745Z",
+  "generatedAt": "2026-05-07T16:40:43.778Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -9,6 +9,43 @@
       "features": [
         "paragraph",
         "text"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.complex-table",
+      "path": "adf-to-md/gfm/complex-table/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "rowspan",
+        "unsupportedComplexTable"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.media-fallback",
+      "path": "adf-to-md/gfm/media-fallback/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "mediaSingle",
+        "media",
+        "mediaFallback"
+      ]
+    },
+    {
+      "id": "adf-to-md.gfm.simple-table",
+      "path": "adf-to-md/gfm/simple-table/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "paragraph",
+        "text",
+        "strong"
       ]
     },
     {
@@ -112,6 +149,18 @@
       ]
     },
     {
+      "id": "md-to-adf.gfm.image-fallback",
+      "path": "md-to-adf/gfm/image-fallback/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "image",
+        "link",
+        "paragraph",
+        "text",
+        "mediaFallback"
+      ]
+    },
+    {
       "id": "md-to-adf.gfm.table",
       "path": "md-to-adf/gfm/table/case.json",
       "direction": "md-to-adf",
@@ -123,6 +172,16 @@
         "paragraph",
         "text",
         "strong"
+      ]
+    },
+    {
+      "id": "md-to-adf.gfm.task-list",
+      "path": "md-to-adf/gfm/task-list/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "taskList",
+        "taskItem",
+        "text"
       ]
     },
     {

@@ -112,10 +112,31 @@ function listNode(
   diagnostics: Diagnostic[],
   path: string,
 ): AdfNode {
+  const children = (node.children ?? []).filter(
+    (child) => child.type === "listItem",
+  );
+  if (
+    !node.ordered &&
+    children.length > 0 &&
+    children.every((child) => typeof child.checked === "boolean")
+  ) {
+    const taskList = taskListNode(children, diagnostics, path);
+    if (taskList) return taskList;
+  }
+  if (children.some((child) => typeof child.checked === "boolean")) {
+    diagnostics.push({
+      severity: "warning",
+      code: "TaskListFallback",
+      path,
+      message:
+        "Mixed or complex GFM task list items were converted to bullet list items.",
+      fallback: "bulletList",
+    });
+  }
+
   const list: AdfNode = {
     type: node.ordered ? "orderedList" : "bulletList",
-    content: (node.children ?? [])
-      .filter((child) => child.type === "listItem")
+    content: children
       .map((child, index) =>
         listItemNode(child, diagnostics, `${path}/content/${index}`),
       ),
@@ -124,6 +145,53 @@ function listNode(
     list.attrs = { order: node.start };
   }
   return list;
+}
+
+function taskListNode(
+  children: MarkdownNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode | undefined {
+  const items = children.map((child, index) =>
+    taskItemNode(child, diagnostics, `${path}/content/${index}`),
+  );
+  if (items.some((item) => item === undefined)) {
+    diagnostics.push({
+      severity: "warning",
+      code: "TaskListFallback",
+      path,
+      message:
+        "Complex GFM task list items were converted to bullet list items.",
+      fallback: "bulletList",
+    });
+    return undefined;
+  }
+
+  const localId = localIdFromPath("task-list", path);
+  return {
+    type: "taskList",
+    attrs: { localId },
+    content: items as AdfNode[],
+  };
+}
+
+function taskItemNode(
+  node: MarkdownNode,
+  diagnostics: Diagnostic[],
+  path: string,
+): AdfNode | undefined {
+  const children = node.children ?? [];
+  if (children.length !== 1 || children[0]?.type !== "paragraph") {
+    return undefined;
+  }
+  return {
+    type: "taskItem",
+    attrs: {
+      localId: localIdFromPath("task-item", path),
+      state: node.checked === true ? "DONE" : "TODO",
+    },
+    content: inlineChildren(children[0].children ?? [], diagnostics),
+  };
 }
 
 function listItemNode(
@@ -136,7 +204,22 @@ function listItemNode(
     diagnostics,
     `${path}/content`,
   );
+  if (typeof node.checked === "boolean") {
+    prependTaskFallbackMarker(content, node.checked === true);
+  }
   return { type: "listItem", content };
+}
+
+function prependTaskFallbackMarker(content: AdfNode[], checked: boolean): void {
+  const marker = checked ? "[x] " : "[ ] ";
+  if (content[0]?.type !== "paragraph") {
+    content.unshift({
+      type: "paragraph",
+      content: [{ type: "text", text: marker }],
+    });
+    return;
+  }
+  content[0].content = [{ type: "text", text: marker }, ...(content[0].content ?? [])];
 }
 
 function codeBlockNode(node: MarkdownNode): AdfNode {
@@ -245,6 +328,12 @@ function inlineNode(
     case "image": {
       const attrs: Record<string, unknown> = { href: node.url ?? "" };
       if (node.title) attrs.title = node.title;
+      diagnostics.push({
+        severity: "warning",
+        code: "MarkdownImageLinkFallback",
+        message: "Markdown image was converted to linked text fallback.",
+        fallback: "link",
+      });
       return textNode(node.alt ?? node.url ?? "", [
         ...marks,
         { type: "link", attrs },
@@ -302,4 +391,9 @@ function appendInline(nodes: AdfNode[], node: AdfNode): void {
 function plainText(node: MarkdownNode): string {
   if (typeof node.value === "string") return node.value;
   return (node.children ?? []).map((child) => plainText(child)).join("");
+}
+
+function localIdFromPath(prefix: string, path: string): string {
+  const suffix = path.replace(/^\/+/, "").replace(/[^A-Za-z0-9_-]+/g, "-");
+  return `${prefix}-${suffix || "root"}`;
 }

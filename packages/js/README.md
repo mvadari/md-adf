@@ -59,9 +59,9 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 
 ## Current Support
 
-ADF to Markdown supports Phase 1 blocks and marks: paragraphs, headings, block quotes, bullet and ordered lists, list items, code blocks, thematic breaks, text, hard breaks, strong, emphasis, strikethrough, inline code, and links.
+ADF to Markdown supports Phase 1 blocks and marks plus simple GFM table rendering, task lists, and media link/text fallback.
 
-Markdown to ADF supports the same Phase 1 surface plus GFM table input, soft breaks as spaces, raw HTML as text fallback, and images as linked text fallback.
+Markdown to ADF supports the same Phase 1 surface plus GFM table input, simple GFM task lists, soft breaks as spaces, raw HTML as text fallback, and images as linked text fallback with diagnostics.
 
 Markdown parser AST access is not exposed as public API yet. Conversion uses real Markdown parsers internally, but the supported public surface is conversion to and from ADF.
 

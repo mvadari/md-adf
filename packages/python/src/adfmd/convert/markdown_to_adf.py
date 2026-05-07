@@ -110,6 +110,28 @@ def _list_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> 
         for child in _children(node)
         if child.get("type") in {"list_item", "task_list_item"}
     ]
+    if (
+        not ordered
+        and len(items) > 0
+        and all(child.get("type") == "task_list_item" for child in items)
+    ):
+        task_list = _task_list_node(items, diagnostics, path)
+        if task_list is not None:
+            return task_list
+    if any(child.get("type") == "task_list_item" for child in items):
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="TaskListFallback",
+                path=path,
+                message=(
+                    "Mixed or complex GFM task list items were converted to "
+                    "bullet list items."
+                ),
+                fallback="bulletList",
+            )
+        )
+
     list_node: AdfNode = {
         "type": "orderedList" if ordered else "bulletList",
         "content": [
@@ -123,13 +145,67 @@ def _list_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> 
     return list_node
 
 
+def _task_list_node(
+    items: list[MarkdownNode], diagnostics: list[Diagnostic], path: str
+) -> AdfNode | None:
+    task_items = [
+        _task_item_node(item, diagnostics, f"{path}/content/{index}")
+        for index, item in enumerate(items)
+    ]
+    if any(item is None for item in task_items):
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="TaskListFallback",
+                path=path,
+                message="Complex GFM task list items were converted to bullet list items.",
+                fallback="bulletList",
+            )
+        )
+        return None
+
+    return {
+        "type": "taskList",
+        "attrs": {"localId": _local_id_from_path("task-list", path)},
+        "content": [item for item in task_items if item is not None],
+    }
+
+
+def _task_item_node(
+    node: MarkdownNode, diagnostics: list[Diagnostic], path: str
+) -> AdfNode | None:
+    children = _children(node)
+    if len(children) != 1 or children[0].get("type") not in {"block_text", "paragraph"}:
+        return None
+
+    return {
+        "type": "taskItem",
+        "attrs": {
+            "localId": _local_id_from_path("task-item", path),
+            "state": "DONE" if _attrs(node).get("checked") is True else "TODO",
+        },
+        "content": _inline_children(_children(children[0]), diagnostics),
+    }
+
+
 def _list_item_node(
     node: MarkdownNode, diagnostics: list[Diagnostic], path: str
 ) -> AdfNode:
+    content = _block_children(_children(node), diagnostics, f"{path}/content")
+    if node.get("type") == "task_list_item":
+        _prepend_task_fallback_marker(content, _attrs(node).get("checked") is True)
     return {
         "type": "listItem",
-        "content": _block_children(_children(node), diagnostics, f"{path}/content"),
+        "content": content,
     }
+
+
+def _prepend_task_fallback_marker(content: list[AdfNode], checked: bool) -> None:
+    marker = "[x] " if checked else "[ ] "
+    if not content or content[0].get("type") != "paragraph":
+        content.insert(0, {"type": "paragraph", "content": [{"type": "text", "text": marker}]})
+        return
+    content[0]["content"] = [{"type": "text", "text": marker}, *content[0].get("content", [])]
 
 
 def _code_block_node(node: MarkdownNode) -> AdfNode:
@@ -266,7 +342,15 @@ def _inline_node(
         title = attrs.get("title")
         if isinstance(title, str) and title:
             image_link_attrs["title"] = title
-        alt = str(attrs.get("alt", attrs.get("url", "")))
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="MarkdownImageLinkFallback",
+                message="Markdown image was converted to linked text fallback.",
+                fallback="link",
+            )
+        )
+        alt = _plain_text(node) or str(attrs.get("url", ""))
         return _text_node(alt, [*marks, {"type": "link", "attrs": image_link_attrs}])
 
     if node_type == "inline_html":
@@ -331,3 +415,9 @@ def _children(node: MarkdownNode) -> list[MarkdownNode]:
 def _attrs(node: MarkdownNode) -> dict[str, Any]:
     attrs = node.get("attrs")
     return cast(dict[str, Any], attrs if isinstance(attrs, dict) else {})
+
+
+def _local_id_from_path(prefix: str, path: str) -> str:
+    suffix = path.strip("/")
+    suffix = "".join(char if char.isalnum() or char in {"_", "-"} else "-" for char in suffix)
+    return f"{prefix}-{suffix or 'root'}"
