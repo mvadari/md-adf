@@ -33,11 +33,10 @@ SUPPORTED_MARKS = {"strong", "em", "strike", "code", "link"}
 def adf_to_markdown(
     adf: Any, options: ConversionOptions | None = None
 ) -> ConversionResult[str]:
-    _ = options
     diagnostics: list[Diagnostic] = []
 
     try:
-        document = parse_adf(adf)
+        document = parse_adf(adf, options)
     except ValueError as exc:
         diagnostics.append(
             Diagnostic(

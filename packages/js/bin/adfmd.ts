@@ -41,7 +41,10 @@ async function main(argv: string[]): Promise<number> {
       const input = await readInput(args.input);
       const result = markdownToAdf(input, { profile: args.profile ?? "jira" });
       writeDiagnostics(result.diagnostics);
-      await writeOutput(args.output, `${JSON.stringify(result.value, null, 2)}\n`);
+      await writeOutput(
+        args.output,
+        `${JSON.stringify(result.value, null, 2)}\n`,
+      );
       return hasErrorDiagnostics(result.diagnostics) ? 1 : 0;
     }
 
@@ -136,7 +139,10 @@ async function readInput(path: string | undefined): Promise<string> {
   });
 }
 
-async function writeOutput(path: string | undefined, value: string): Promise<void> {
+async function writeOutput(
+  path: string | undefined,
+  value: string,
+): Promise<void> {
   if (path) {
     await writeFile(path, value, "utf8");
     return;
@@ -156,8 +162,12 @@ function hasErrorDiagnostics(diagnostics: Diagnostic[]): boolean {
 
 function printUsage(): void {
   console.error("Usage:");
-  console.error("  adfmd to-md [input] [--output output.md] [--profile portableMarkdown]");
-  console.error("  adfmd to-adf [input] [--output output.adf.json] [--profile jira]");
+  console.error(
+    "  adfmd to-md [input] [--output output.md] [--profile portableMarkdown]",
+  );
+  console.error(
+    "  adfmd to-adf [input] [--output output.adf.json] [--profile jira]",
+  );
   console.error("  adfmd validate-adf [input]");
 }
 

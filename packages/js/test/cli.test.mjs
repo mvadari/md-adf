@@ -73,9 +73,10 @@ test("to-md writes to --output", async () => {
 });
 
 test("validate-adf accepts valid ADF from stdin", () => {
-  const result = runCli([
-    "validate-adf",
-  ], JSON.stringify({ version: 1, type: "doc", content: [] }));
+  const result = runCli(
+    ["validate-adf"],
+    JSON.stringify({ version: 1, type: "doc", content: [] }),
+  );
 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, "");

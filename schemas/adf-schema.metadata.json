@@ -1,0 +1,9 @@
+{
+  "name": "Atlassian Document Format JSON Schema",
+  "source": "http://go.atlassian.com/adf-json-schema",
+  "retrievedAt": "2026-05-07T00:00:00Z",
+  "schemaPath": "schemas/adf-schema.json",
+  "schemaDraft": "http://json-schema.org/draft-04/schema#",
+  "sha256": "9c4c8237e8ecdb5088438421be2f9fc7becf1ffb6096951af4eb4d4c85a06190",
+  "notes": "Pinned for deterministic local validation. Tests must not fetch the live schema."
+}

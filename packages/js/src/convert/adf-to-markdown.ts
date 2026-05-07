@@ -31,13 +31,13 @@ const supportedMarks = new Set(["strong", "em", "strike", "code", "link"]);
 
 export function adfToMarkdown(
   adf: AdfDocument | unknown,
-  _options: ConversionOptions = {},
+  options: ConversionOptions = {},
 ): ConversionResult<string> {
   const diagnostics: Diagnostic[] = [];
   let document: AdfDocument;
 
   try {
-    document = parseAdf(adf);
+    document = parseAdf(adf, options);
   } catch (error) {
     diagnostics.push({
       severity: "error",
