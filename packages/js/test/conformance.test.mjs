@@ -73,8 +73,19 @@ for (const manifestCase of manifest.cases) {
     const expected = JSON.parse(
       await readFile(resolve(caseDir, "expected.normalized.adf.json"), "utf8"),
     )
+    const expectedDiagnosticsPath = resolve(
+      caseDir,
+      "expected.diagnostics.json",
+    )
+    const expectedDiagnostics = existsSync(expectedDiagnosticsPath)
+      ? JSON.parse(await readFile(expectedDiagnosticsPath, "utf8"))
+      : []
     const markdown = adfToMarkdown(input, testCase.options)
-    assertDiagnosticsEqual(markdown.diagnostics, [], `${testCase.id} adf-to-md`)
+    assertDiagnosticsEqual(
+      markdown.diagnostics,
+      expectedDiagnostics,
+      `${testCase.id} adf-to-md`,
+    )
     const adf = markdownToAdf(markdown.value, testCase.options)
     assertDiagnosticsEqual(adf.diagnostics, [], `${testCase.id} md-to-adf`)
     assertAdfEqual(adf.value, expected, testCase.id)
