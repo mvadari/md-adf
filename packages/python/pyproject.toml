@@ -3,7 +3,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "adfmd"
+name = "md-adf"
 version = "0.1.0"
 description = "ADF-Markdown converter for Python."
 readme = "README.md"
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.scripts]
-adfmd = "adfmd_cli.__main__:main"
+md-adf = "md_adf_cli.__main__:main"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.0"
@@ -32,7 +32,7 @@ types-jsonschema = "^4.26.0.20260408"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["adfmd*", "adfmd_cli*"]
+include = ["md_adf*", "md_adf_cli*"]
 
 [tool.setuptools.package-data]
-adfmd = ["py.typed", "schemas/*.json"]
+md_adf = ["py.typed", "schemas/*.json"]

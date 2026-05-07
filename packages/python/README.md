@@ -1,11 +1,11 @@
-# adfmd
+# md-adf
 
 Typed Python implementation of the ADF-Markdown converter.
 
 ## Install
 
 ```sh
-pip install adfmd
+pip install md-adf
 ```
 
 Requires Python 3.10 or newer.
@@ -13,7 +13,7 @@ Requires Python 3.10 or newer.
 ## API
 
 ```python
-from adfmd import (
+from md_adf import (
     adf_to_markdown,
     markdown_to_adf,
     parse_adf,
@@ -49,10 +49,10 @@ ADF-to-Markdown returns a string with trailing whitespace trimmed and no final n
 ## CLI
 
 ```sh
-adfmd to-md input.adf.json --output output.md
-adfmd to-adf input.md --output output.adf.json
-adfmd validate-adf input.adf.json
-cat input.md | adfmd to-adf --profile jira
+md-adf to-md input.adf.json --output output.md
+md-adf to-adf input.md --output output.adf.json
+md-adf validate-adf input.adf.json
+cat input.md | md-adf to-adf --profile jira
 ```
 
 Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics are emitted as JSON lines to stderr.

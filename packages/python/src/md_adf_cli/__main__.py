@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 import sys
 
-from adfmd import adf_to_markdown, markdown_to_adf, validate_adf
-from adfmd.diagnostics import Diagnostic
-from adfmd.options import ConversionOptions
+from md_adf import adf_to_markdown, markdown_to_adf, validate_adf
+from md_adf.diagnostics import Diagnostic
+from md_adf.options import ConversionOptions
 
 COMMANDS = {"to-md", "to-adf", "validate-adf"}
 PROFILES = {"jira", "confluence", "portableMarkdown"}
@@ -168,14 +168,14 @@ def print_usage() -> None:
 
     print("Usage:", file=sys.stderr)
     print(
-        "  adfmd to-md [input] [--output output.md] [--profile portableMarkdown]",
+        "  md-adf to-md [input] [--output output.md] [--profile portableMarkdown]",
         file=sys.stderr,
     )
     print(
-        "  adfmd to-adf [input] [--output output.adf.json] [--profile jira]",
+        "  md-adf to-adf [input] [--output output.adf.json] [--profile jira]",
         file=sys.stderr,
     )
-    print("  adfmd validate-adf [input]", file=sys.stderr)
+    print("  md-adf validate-adf [input]", file=sys.stderr)
 
 
 if __name__ == "__main__":

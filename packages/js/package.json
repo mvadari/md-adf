@@ -1,5 +1,5 @@
 {
-  "name": "adfmd",
+  "name": "md-adf",
   "version": "0.1.0",
   "description": "ADF-Markdown converter for JavaScript and TypeScript.",
   "license": "MIT",
@@ -13,7 +13,7 @@
     }
   },
   "bin": {
-    "adfmd": "./dist/bin/adfmd.js"
+    "md-adf": "./dist/bin/mdAdf.js"
   },
   "files": [
     "dist",

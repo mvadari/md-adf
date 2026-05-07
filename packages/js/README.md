@@ -1,11 +1,11 @@
-# adfmd
+# md-adf
 
 TypeScript implementation of the ADF-Markdown converter.
 
 ## Install
 
 ```sh
-npm install adfmd
+npm install md-adf
 ```
 
 Requires Node.js 20 or newer.
@@ -13,7 +13,7 @@ Requires Node.js 20 or newer.
 ## API
 
 ```ts
-import { adfToMarkdown, markdownToAdf, parseAdf, validateAdf } from "adfmd"
+import { adfToMarkdown, markdownToAdf, parseAdf, validateAdf } from "md-adf"
 
 const markdownResult = adfToMarkdown(adfDocument)
 console.log(markdownResult.value)
@@ -44,10 +44,10 @@ ADF-to-Markdown returns a string with trailing whitespace trimmed and no final n
 ## CLI
 
 ```sh
-adfmd to-md input.adf.json --output output.md
-adfmd to-adf input.md --output output.adf.json
-adfmd validate-adf input.adf.json
-cat input.adf.json | adfmd to-md --profile portableMarkdown
+md-adf to-md input.adf.json --output output.md
+md-adf to-adf input.md --output output.adf.json
+md-adf validate-adf input.adf.json
+cat input.adf.json | md-adf to-md --profile portableMarkdown
 ```
 
 Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics are emitted as JSON lines to stderr.

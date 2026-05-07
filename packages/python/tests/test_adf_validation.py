@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from adfmd import parse_adf, validate_adf
+from md_adf import parse_adf, validate_adf
 
 
 ROOT = Path(__file__).parents[3]

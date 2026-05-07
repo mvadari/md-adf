@@ -1,4 +1,4 @@
-# adfmd
+# md-adf
 
 ADF-Markdown converter monorepo.
 
@@ -6,8 +6,8 @@ This repository hosts JavaScript/TypeScript and Python implementations of the sa
 
 Current packages:
 
-- `packages/js`: TypeScript package published to npm as `adfmd`.
-- `packages/python`: typed Python package published to PyPI as `adfmd`.
+- `packages/js`: TypeScript package published to npm as `md-adf`.
+- `packages/python`: typed Python package published to PyPI as `md-adf`.
 
 ## Current Support
 
@@ -34,11 +34,11 @@ The JavaScript and Python APIs share the same Phase 1 option behavior:
 JavaScript:
 
 ```sh
-npm install adfmd
+npm install md-adf
 ```
 
 ```ts
-import { adfToMarkdown, markdownToAdf } from "adfmd";
+import { adfToMarkdown, markdownToAdf } from "md-adf";
 
 const markdown = adfToMarkdown(adfDocument).value;
 const adf = markdownToAdf("# Hello").value;
@@ -47,11 +47,11 @@ const adf = markdownToAdf("# Hello").value;
 Python:
 
 ```sh
-pip install adfmd
+pip install md-adf
 ```
 
 ```python
-from adfmd import adf_to_markdown, markdown_to_adf
+from md_adf import adf_to_markdown, markdown_to_adf
 
 markdown = adf_to_markdown(adf_document).value
 adf = markdown_to_adf("# Hello").value
@@ -60,10 +60,10 @@ adf = markdown_to_adf("# Hello").value
 CLI:
 
 ```sh
-adfmd to-md input.adf.json --output output.md
-adfmd to-adf input.md --output output.adf.json
-adfmd validate-adf input.adf.json
-cat input.md | adfmd to-adf --profile jira
+md-adf to-md input.adf.json --output output.md
+md-adf to-adf input.md --output output.adf.json
+md-adf validate-adf input.adf.json
+cat input.md | md-adf to-adf --profile jira
 ```
 
 Diagnostics are written as JSON lines to stderr. Input defaults to stdin and output defaults to stdout.

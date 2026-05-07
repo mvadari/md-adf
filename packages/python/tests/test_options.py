@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from adfmd import ConversionOptions, adf_to_markdown, markdown_to_adf
+from md_adf import ConversionOptions, adf_to_markdown, markdown_to_adf
 
 
 VALID_ADF = {

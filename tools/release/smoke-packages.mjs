@@ -4,7 +4,7 @@ import { basename, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 
 const root = resolve(new URL("../..", import.meta.url).pathname);
-const tempRoot = await mkdtemp(join(tmpdir(), "adfmd-package-smoke-"));
+const tempRoot = await mkdtemp(join(tmpdir(), "md-adf-package-smoke-"));
 const npmCache = join(tempRoot, "npm-cache");
 
 await smokeJs();
@@ -40,7 +40,7 @@ async function smokeJs() {
       "--input-type=module",
       "--eval",
       [
-        'import { adfToMarkdown, markdownToAdf, validateAdf } from "adfmd";',
+        'import { adfToMarkdown, markdownToAdf, validateAdf } from "md-adf";',
         'const md = adfToMarkdown({ type: "doc", version: 1, content: [{ type: "paragraph", content: [{ type: "text", text: "Hello" }] }] });',
         'if (md.value !== "Hello") throw new Error(`Unexpected markdown: ${md.value}`);',
         'const adf = markdownToAdf("# Hello");',
@@ -51,10 +51,10 @@ async function smokeJs() {
     { cwd: projectDir },
   );
   await writeFile(join(projectDir, "input.md"), "# Hello\n", "utf8");
-  await run("npx", ["adfmd", "to-adf", "input.md", "--output", "output.adf.json"], {
+  await run("npx", ["md-adf", "to-adf", "input.md", "--output", "output.adf.json"], {
     cwd: projectDir,
   });
-  await run("npx", ["adfmd", "validate-adf", "output.adf.json"], {
+  await run("npx", ["md-adf", "validate-adf", "output.adf.json"], {
     cwd: projectDir,
   });
 }
@@ -75,14 +75,14 @@ async function smokePython() {
 
   await run("python3", ["-m", "venv", venvDir], { cwd: projectDir });
   const python = join(venvDir, process.platform === "win32" ? "Scripts/python.exe" : "bin/python");
-  const adfmd = join(venvDir, process.platform === "win32" ? "Scripts/adfmd.exe" : "bin/adfmd");
+  const mdAdf = join(venvDir, process.platform === "win32" ? "Scripts/md-adf.exe" : "bin/md-adf");
   await run(python, ["-m", "pip", "install", join(distDir, wheel)], { cwd: projectDir });
   await run(
     python,
     [
       "-c",
       [
-        "from adfmd import adf_to_markdown, markdown_to_adf, validate_adf",
+        "from md_adf import adf_to_markdown, markdown_to_adf, validate_adf",
         "doc = {'type': 'doc', 'version': 1, 'content': [{'type': 'paragraph', 'content': [{'type': 'text', 'text': 'Hello'}]}]}",
         "md = adf_to_markdown(doc)",
         "assert md.value == 'Hello', md.value",
@@ -94,10 +94,10 @@ async function smokePython() {
     { cwd: projectDir },
   );
   await writeFile(join(projectDir, "input.md"), "# Hello\n", "utf8");
-  await run(adfmd, ["to-adf", "input.md", "--output", "output.adf.json"], {
+  await run(mdAdf, ["to-adf", "input.md", "--output", "output.adf.json"], {
     cwd: projectDir,
   });
-  await run(adfmd, ["validate-adf", "output.adf.json"], { cwd: projectDir });
+  await run(mdAdf, ["validate-adf", "output.adf.json"], { cwd: projectDir });
 }
 
 async function mkdirp(path) {

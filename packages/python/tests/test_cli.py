@@ -89,7 +89,7 @@ def run_cli(args: list[str], input_text: str = "") -> subprocess.CompletedProces
     env = os.environ.copy()
     env["PYTHONPATH"] = str(PYTHON_SRC)
     return subprocess.run(
-        [sys.executable, "-m", "adfmd_cli", *args],
+        [sys.executable, "-m", "md_adf_cli", *args],
         cwd=ROOT,
         input=input_text,
         text=True,

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url"
 import test from "node:test"
 
 const here = dirname(fileURLToPath(import.meta.url))
-const cli = resolve(here, "../dist/bin/adfmd.js")
+const cli = resolve(here, "../dist/bin/mdAdf.js")
 
 test("to-md converts ADF from stdin to stdout", () => {
   const adf = {
@@ -46,7 +46,7 @@ test("to-adf converts Markdown from stdin to stdout", () => {
 })
 
 test("to-md writes to --output", async () => {
-  const dir = await mkdtemp(join(tmpdir(), "adfmd-js-cli-"))
+  const dir = await mkdtemp(join(tmpdir(), "md-adf-js-cli-"))
   const input = join(dir, "input.adf.json")
   const output = join(dir, "output.md")
   await writeFile(

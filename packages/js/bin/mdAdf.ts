@@ -188,12 +188,12 @@ function hasErrorDiagnostics(diagnostics: Diagnostic[]): boolean {
 function printUsage(): void {
   console.error("Usage:")
   console.error(
-    "  adfmd to-md [input] [--output output.md] [--profile portableMarkdown]",
+    "  md-adf to-md [input] [--output output.md] [--profile portableMarkdown]",
   )
   console.error(
-    "  adfmd to-adf [input] [--output output.adf.json] [--profile jira]",
+    "  md-adf to-adf [input] [--output output.adf.json] [--profile jira]",
   )
-  console.error("  adfmd validate-adf [input]")
+  console.error("  md-adf validate-adf [input]")
 }
 
 process.exitCode = await main(process.argv.slice(2))

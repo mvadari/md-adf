@@ -13,7 +13,7 @@ def main() -> int:
     root = Path(__file__).parents[2]
     sys.path.insert(0, str(root / "packages" / "python" / "src"))
 
-    from adfmd import adf_to_markdown, markdown_to_adf, validate_adf
+    from md_adf import adf_to_markdown, markdown_to_adf, validate_adf
 
     manifest = json.loads((root / "fixtures" / "manifest.json").read_text(encoding="utf-8"))
 

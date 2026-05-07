@@ -1,5 +1,5 @@
 {
-  "name": "adfmd-monorepo",
+  "name": "md-adf",
   "private": true,
   "version": "0.0.0",
   "description": "Workspace orchestration for ADF-Markdown converter implementations.",
