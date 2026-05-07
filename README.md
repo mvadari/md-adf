@@ -91,7 +91,7 @@ just generate-manifest
 - Markdown to ADF maps images to linked text fallback instead of ADF media nodes.
 - Markdown raw HTML is preserved as text fallback; it is not interpreted into rich ADF.
 - Unsupported ADF nodes are omitted with diagnostics.
-- `parseMarkdown` currently exposes a lightweight wrapper; conversion uses the package parser internally.
+- Markdown parser AST access is not exposed as public API yet; conversion uses real Markdown parsers internally.
 
 ## Repository Layout
 

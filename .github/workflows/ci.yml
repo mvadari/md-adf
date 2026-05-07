@@ -102,6 +102,9 @@ jobs:
       - name: Test Python
         run: npm run test:python
 
+      - name: Build Python package
+        run: poetry -C packages/python build
+
   conformance:
     name: Cross-language conformance
     runs-on: ubuntu-latest

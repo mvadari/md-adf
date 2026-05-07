@@ -5,6 +5,5 @@ export type {
   DiagnosticSeverity,
 } from "./diagnostics/diagnostic.js";
 export type { ConversionOptions, ConversionResult } from "./options.js";
-export { parseMarkdown } from "./markdown/parse.js";
 export { adfToMarkdown } from "./convert/adf-to-markdown.js";
 export { markdownToAdf } from "./convert/markdown-to-adf.js";

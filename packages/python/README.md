@@ -17,7 +17,6 @@ from adfmd import (
     adf_to_markdown,
     markdown_to_adf,
     parse_adf,
-    parse_markdown,
     validate_adf,
 )
 
@@ -63,6 +62,8 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 ADF to Markdown supports Phase 1 blocks and marks: paragraphs, headings, block quotes, bullet and ordered lists, list items, code blocks, thematic breaks, text, hard breaks, strong, emphasis, strikethrough, inline code, and links.
 
 Markdown to ADF supports the same Phase 1 surface plus GFM table input, soft breaks as spaces, raw HTML as text fallback, and images as linked text fallback.
+
+Markdown parser AST access is not exposed as public API yet. Conversion uses real Markdown parsers internally, but the supported public surface is conversion to and from ADF.
 
 ## Development
 

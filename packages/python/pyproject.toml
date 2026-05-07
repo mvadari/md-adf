@@ -1,6 +1,6 @@
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "adfmd"
@@ -24,14 +24,15 @@ dependencies = [
 [project.scripts]
 adfmd = "adfmd_cli.__main__:main"
 
-[tool.poetry]
-packages = [
-  { include = "adfmd", from = "src" },
-  { include = "adfmd_cli", from = "src" }
-]
-
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.0"
 pytest = ">=8.0"
 ruff = ">=0.4"
 types-jsonschema = "^4.26.0.20260408"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["adfmd*", "adfmd_cli*"]
+
+[tool.setuptools.package-data]
+adfmd = ["py.typed", "schemas/*.json"]
