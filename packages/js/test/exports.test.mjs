@@ -21,16 +21,20 @@ test("package export map exposes converter and validation subpaths", async () =>
   ])
 
   const [
+    root,
     { adfFragmentToMarkdown, adfToMarkdown },
     { markdownToAdf },
     validate,
   ] = await Promise.all([
+    import("md-adf"),
     import("md-adf/adf-to-markdown"),
     import("md-adf/markdown-to-adf"),
     import("md-adf/validate"),
     import("md-adf/types"),
   ])
 
+  assert.equal(typeof root.validateAdf, "function")
+  assert.equal(typeof root.parseAdf, "function")
   assert.equal(typeof adfToMarkdown, "function")
   assert.equal(typeof adfFragmentToMarkdown, "function")
   assert.equal(typeof markdownToAdf, "function")
@@ -39,7 +43,7 @@ test("package export map exposes converter and validation subpaths", async () =>
 
 test("browser-safe converter entrypoints do not import Node-only validation", async () => {
   const browserSafeFiles = [
-    "dist/src/index.js",
+    "dist/src/browser.js",
     "dist/src/convert/adfToMarkdown.js",
     "dist/src/adf/coerce.js",
   ]

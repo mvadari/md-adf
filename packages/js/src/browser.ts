@@ -9,4 +9,3 @@ export {
   adfToMarkdown,
 } from "./convert/adfToMarkdown.js"
 export { markdownToAdf } from "./convert/markdownToAdf.js"
-export { parseAdf, validateAdf, type ValidationResult } from "./adf/validate.js"
