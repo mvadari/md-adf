@@ -8,6 +8,8 @@ DiagnosticSeverity = Literal["info", "warning", "error"]
 
 @dataclass(frozen=True)
 class Diagnostic:
+    """Structured message for validation issues or lossy conversion fallbacks."""
+
     severity: DiagnosticSeverity
     code: str
     message: str

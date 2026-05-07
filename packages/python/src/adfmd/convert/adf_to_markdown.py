@@ -46,9 +46,9 @@ MARK_ORDER = ("link", "strong", "em", "strike")
 SUPPORTED_MARKS = {"strong", "em", "strike", "code", "link"}
 
 
-def adf_to_markdown(
-    adf: Any, options: ConversionOptionsInput = None
-) -> ConversionResult[str]:
+def adf_to_markdown(adf: Any, options: ConversionOptionsInput = None) -> ConversionResult[str]:
+    """Convert an ADF document into Markdown with validation and fallback diagnostics."""
+
     resolved_options = resolve_conversion_options(options)
     diagnostics: list[Diagnostic] = []
 
@@ -71,17 +71,18 @@ def adf_to_markdown(
     )
 
 
-def render_blocks(
-    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str
-) -> str:
+def render_blocks(nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str) -> str:
+    """Render ADF block nodes separated by Markdown blank lines."""
+
     blocks = [
-        render_block(node, diagnostics, f"{path}/{index}")
-        for index, node in enumerate(nodes)
+        render_block(node, diagnostics, f"{path}/{index}") for index, node in enumerate(nodes)
     ]
     return "\n\n".join(block for block in blocks if len(block) > 0)
 
 
 def render_block(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render one ADF block node into Markdown."""
+
     node_type = node.get("type")
     if node_type not in SUPPORTED_NODES:
         diagnostics.append(
@@ -165,6 +166,8 @@ def render_block(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
 
 
 def render_panel(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF panel as a Markdown blockquote fallback."""
+
     diagnostics.append(
         Diagnostic(
             severity="warning",
@@ -181,6 +184,8 @@ def render_panel(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
 
 
 def render_expand(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF expand by flattening its title and content."""
+
     diagnostics.append(
         Diagnostic(
             severity="warning",
@@ -197,6 +202,8 @@ def render_expand(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> st
 
 
 def render_card(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF card as a Markdown link or text fallback."""
+
     attrs = _attrs(node)
     url = _card_url(attrs)
     label = _card_label(attrs) or url or "card"
@@ -226,9 +233,13 @@ def render_card(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
 
 
 def render_table(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render a simple rectangular ADF table as a GFM table."""
+
     rows = node.get("content", [])
 
     def unsupported(message: str, detail_path: str = path) -> str:
+        """Record an unsupported table diagnostic and omit the table."""
+
         diagnostics.append(
             Diagnostic(
                 severity="warning",
@@ -261,12 +272,13 @@ def render_table(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
         for cell_index, cell in enumerate(cells):
             cell_path = f"{path}/content/{row_index}/content/{cell_index}"
             if cell.get("type") not in {"tableHeader", "tableCell"}:
-                return unsupported("ADF table contains non-cell children and was omitted.", cell_path)
+                return unsupported(
+                    "ADF table contains non-cell children and was omitted.", cell_path
+                )
 
             attrs = _attrs(cell)
-            if (
-                ("rowspan" in attrs and attrs.get("rowspan") != 1)
-                or ("colspan" in attrs and attrs.get("colspan") != 1)
+            if ("rowspan" in attrs and attrs.get("rowspan") != 1) or (
+                "colspan" in attrs and attrs.get("colspan") != 1
             ):
                 return unsupported("ADF table with row or column spans was omitted.", cell_path)
 
@@ -301,14 +313,20 @@ def render_table(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
 
 
 def render_table_row(cells: list[str]) -> str:
+    """Render one Markdown table row from already escaped cell text."""
+
     return f"| {' | '.join(cells)} |"
 
 
 def escape_table_cell_markdown(markdown: str) -> str:
+    """Escape characters that would break a GFM table cell."""
+
     return re.sub(r"(^|[^\\])\|", r"\1\\|", markdown.replace("\n", " "))
 
 
 def render_task_list(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF taskList as a GFM task list."""
+
     items: list[str] = []
     for index, item in enumerate(node.get("content", [])):
         item_type = item.get("type")
@@ -337,6 +355,8 @@ def render_task_list(node: AdfNode, diagnostics: list[Diagnostic], path: str) ->
 
 
 def render_media_group(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render each media child in an ADF mediaGroup as a fallback block."""
+
     return "\n\n".join(
         block
         for block in (
@@ -348,6 +368,8 @@ def render_media_group(node: AdfNode, diagnostics: list[Diagnostic], path: str) 
 
 
 def render_media_single(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render the media child inside an ADF mediaSingle node."""
+
     media = next((child for child in node.get("content", []) if child.get("type") == "media"), None)
     if media is None:
         diagnostics.append(
@@ -364,8 +386,14 @@ def render_media_single(node: AdfNode, diagnostics: list[Diagnostic], path: str)
 
 
 def render_media(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF media node as a Markdown link or text fallback."""
+
     attrs = _attrs(node)
-    url = attrs.get("url") if attrs.get("type") == "external" else link_mark_href(node.get("marks", []))
+    url = (
+        attrs.get("url")
+        if attrs.get("type") == "external"
+        else link_mark_href(node.get("marks", []))
+    )
     label = (
         attrs.get("alt")
         if isinstance(attrs.get("alt"), str) and attrs.get("alt")
@@ -401,15 +429,17 @@ def render_media(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
 
 
 def link_mark_href(marks: list[dict[str, Any]]) -> str | None:
+    """Find an href from the first link mark in a mark list."""
+
     link = next((mark for mark in marks if mark.get("type") == "link"), None)
     attrs = link.get("attrs") if isinstance(link, dict) else None
     href = attrs.get("href") if isinstance(attrs, dict) else None
     return href if isinstance(href, str) else None
 
 
-def render_list(
-    node: AdfNode, diagnostics: list[Diagnostic], path: str, ordered: bool
-) -> str:
+def render_list(node: AdfNode, diagnostics: list[Diagnostic], path: str, ordered: bool) -> str:
+    """Render an ADF ordered or bullet list with continuation indentation."""
+
     start = _to_number(_attrs(node).get("order", 1), 1)
     items: list[str] = []
 
@@ -436,19 +466,23 @@ def render_list(
 
 
 def indent_list_continuation(text: str) -> str:
+    """Indent lines after the first so Markdown continuations stay in the item."""
+
     lines = text.split("\n")
     return "\n".join(line if index == 0 else f"  {line}" for index, line in enumerate(lines))
 
 
 def prefix_lines(text: str, prefix: str) -> str:
+    """Prefix each line of text for blockquote-style Markdown rendering."""
+
     return "\n".join(
         prefix.rstrip() if len(line) == 0 else f"{prefix}{line}" for line in text.split("\n")
     )
 
 
-def render_inline_content(
-    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str
-) -> str:
+def render_inline_content(nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str) -> str:
+    """Render ADF inline children by concatenating each child node."""
+
     return "".join(
         render_inline(node, diagnostics, f"{path}/{index}", index == 0)
         for index, node in enumerate(nodes)
@@ -458,6 +492,8 @@ def render_inline_content(
 def render_inline(
     node: AdfNode, diagnostics: list[Diagnostic], path: str, at_line_start: bool
 ) -> str:
+    """Render one ADF inline node into Markdown or fallback text."""
+
     node_type = node.get("type")
     if node_type == "text":
         return render_marked_text(
@@ -498,10 +534,14 @@ def render_inline(
 
 
 def _is_unsupported_table_inline(node: AdfNode) -> bool:
+    """Return whether inline content cannot be represented in a GFM table."""
+
     return node.get("type") not in {"text", "mention", "emoji", "date", "status"}
 
 
 def render_mention(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF mention as fallback text."""
+
     attrs = _attrs(node)
     text = (
         _non_empty_string(attrs.get("text"))
@@ -514,14 +554,22 @@ def render_mention(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> s
 
 
 def render_emoji(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF emoji as fallback text."""
+
     attrs = _attrs(node)
-    text = _non_empty_string(attrs.get("shortName")) or _non_empty_string(attrs.get("text")) or ":emoji:"
+    text = (
+        _non_empty_string(attrs.get("shortName"))
+        or _non_empty_string(attrs.get("text"))
+        or ":emoji:"
+    )
     _warn_inline_fallback(diagnostics, path, "emoji", "text")
     _warn_dropped_attrs(diagnostics, path, "emoji", attrs, ["shortName", "text"])
     return escape_markdown_text(text)
 
 
 def render_date(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF date as ISO date text when possible."""
+
     attrs = _attrs(node)
     timestamp = _non_empty_string(attrs.get("timestamp"))
     text = _date_text_from_timestamp(timestamp) if timestamp else "date"
@@ -531,6 +579,8 @@ def render_date(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
 
 
 def render_status(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
+    """Render an ADF status as label text and record dropped color data."""
+
     attrs = _attrs(node)
     text = _non_empty_string(attrs.get("text")) or "status"
     _warn_inline_fallback(diagnostics, path, "status", "text")
@@ -551,6 +601,8 @@ def render_status(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> st
 def _warn_inline_fallback(
     diagnostics: list[Diagnostic], path: str, node_type: str, fallback: str
 ) -> None:
+    """Record that a rich inline node used a simpler Markdown fallback."""
+
     diagnostics.append(
         Diagnostic(
             severity="warning",
@@ -569,6 +621,8 @@ def _warn_dropped_attrs(
     attrs: dict[str, Any],
     rendered_attrs: list[str],
 ) -> None:
+    """Record unsupported attributes that fallback output did not preserve."""
+
     dropped_attrs = sorted(attr for attr in attrs if attr not in rendered_attrs)
     if not dropped_attrs:
         return
@@ -588,16 +642,22 @@ def _warn_dropped_attrs(
 
 
 def _non_empty_string(value: Any) -> str | None:
+    """Return a string only when it is non-empty."""
+
     return value if isinstance(value, str) and len(value) > 0 else None
 
 
 def _mention_id_fallback(value: str | None) -> str | None:
+    """Turn a mention id into display text when explicit text is absent."""
+
     if not value:
         return None
     return value if value.startswith("@") else f"@{value}"
 
 
 def _date_text_from_timestamp(timestamp: str) -> str:
+    """Format a numeric timestamp as YYYY-MM-DD, falling back to the raw value."""
+
     milliseconds = _to_number(timestamp, float("nan"))
     if milliseconds == milliseconds and milliseconds not in {float("inf"), float("-inf")}:
         from datetime import datetime, timezone
@@ -610,12 +670,16 @@ def _date_text_from_timestamp(timestamp: str) -> str:
 
 
 def _card_url(attrs: dict[str, Any]) -> str | None:
+    """Extract a card URL from top-level attrs or nested smart-link data."""
+
     data = attrs.get("data")
     data_attrs = data if isinstance(data, dict) else {}
     return _non_empty_string(attrs.get("url")) or _non_empty_string(data_attrs.get("url"))
 
 
 def _card_label(attrs: dict[str, Any]) -> str | None:
+    """Extract a human-readable card label from known card attr locations."""
+
     data = attrs.get("data")
     data_attrs = data if isinstance(data, dict) else {}
     return (
@@ -634,6 +698,8 @@ def render_marked_text(
     path: str,
     at_line_start: bool,
 ) -> str:
+    """Apply supported ADF marks to escaped Markdown text in stable order."""
+
     known_marks: list[dict[str, Any]] = []
     for mark in marks:
         mark_type = mark.get("type")
@@ -689,11 +755,7 @@ def render_marked_text(
                 continue
 
             title_value = attrs.get("title") if isinstance(attrs, dict) else None
-            title = (
-                f' "{escape_link_title(title_value)}"'
-                if isinstance(title_value, str)
-                else ""
-            )
+            title = f' "{escape_link_title(title_value)}"' if isinstance(title_value, str) else ""
             rendered = f"[{rendered}]({escape_link_destination(href)}{title})"
         elif mark_type == "strong":
             rendered = f"**{rendered}**"
@@ -705,9 +767,9 @@ def render_marked_text(
     return rendered
 
 
-def collect_plain_text(
-    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str
-) -> str:
+def collect_plain_text(nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str) -> str:
+    """Collect plain text from codeBlock children, omitting unsupported nodes."""
+
     parts: list[str] = []
     for index, node in enumerate(nodes):
         node_type = node.get("type")
@@ -728,11 +790,15 @@ def collect_plain_text(
 
 
 def _attrs(node: AdfNode) -> dict[str, Any]:
+    """Return an ADF node's attrs as a dictionary."""
+
     attrs = node.get("attrs")
     return attrs if isinstance(attrs, dict) else {}
 
 
 def _to_number(value: Any, fallback: float) -> float:
+    """Coerce a value to a finite float or return a fallback."""
+
     try:
         number = float(value)
     except (TypeError, ValueError):

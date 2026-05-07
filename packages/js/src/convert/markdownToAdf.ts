@@ -27,6 +27,10 @@ type MarkdownNode = {
 
 const markdownParser = unified().use(remarkParse).use(remarkGfm)
 
+/**
+ * Converts Markdown text into an ADF document and reports any lossy fallback
+ * decisions made during conversion.
+ */
 export function markdownToAdf(
   markdown: string,
   options: ConversionOptions = {},
@@ -50,6 +54,9 @@ export function markdownToAdf(
   }
 }
 
+/**
+ * Converts a list of Markdown block nodes into ADF block nodes.
+ */
 function blockChildren(
   nodes: MarkdownNode[],
   diagnostics: Diagnostic[],
@@ -60,6 +67,10 @@ function blockChildren(
   )
 }
 
+/**
+ * Converts one Markdown block node, returning zero or more ADF blocks when a
+ * fallback produces or omits content.
+ */
 function blockNode(
   node: MarkdownNode,
   diagnostics: Diagnostic[],
@@ -107,6 +118,10 @@ function blockNode(
   }
 }
 
+/**
+ * Converts Markdown ordered, bullet, and task-list nodes into their closest ADF
+ * list representation.
+ */
 function listNode(
   node: MarkdownNode,
   diagnostics: Diagnostic[],
@@ -146,6 +161,10 @@ function listNode(
   return list
 }
 
+/**
+ * Converts a simple GFM task list into an ADF taskList, or signals fallback
+ * when any item is too complex.
+ */
 function taskListNode(
   children: MarkdownNode[],
   diagnostics: Diagnostic[],
@@ -174,6 +193,9 @@ function taskListNode(
   }
 }
 
+/**
+ * Converts one simple Markdown task item into an ADF taskItem.
+ */
 function taskItemNode(
   node: MarkdownNode,
   diagnostics: Diagnostic[],
@@ -193,6 +215,10 @@ function taskItemNode(
   }
 }
 
+/**
+ * Converts a Markdown list item and preserves task state as visible text when
+ * the item cannot remain an ADF task item.
+ */
 function listItemNode(
   node: MarkdownNode,
   diagnostics: Diagnostic[],
@@ -209,6 +235,9 @@ function listItemNode(
   return { type: "listItem", content }
 }
 
+/**
+ * Inserts a checked/unchecked marker into fallback list item content.
+ */
 function prependTaskFallbackMarker(content: AdfNode[], checked: boolean): void {
   const marker = checked ? "[x] " : "[ ] "
   if (content[0]?.type !== "paragraph") {
@@ -224,6 +253,9 @@ function prependTaskFallbackMarker(content: AdfNode[], checked: boolean): void {
   ]
 }
 
+/**
+ * Converts a Markdown fenced or indented code block into an ADF codeBlock.
+ */
 function codeBlockNode(node: MarkdownNode): AdfNode {
   const codeBlock: AdfNode = {
     type: "codeBlock",
@@ -233,6 +265,9 @@ function codeBlockNode(node: MarkdownNode): AdfNode {
   return codeBlock
 }
 
+/**
+ * Converts a GFM table into an ADF table and records dropped alignment hints.
+ */
 function tableNode(
   node: MarkdownNode,
   diagnostics: Diagnostic[],
@@ -267,17 +302,27 @@ function tableNode(
   return table
 }
 
+/**
+ * Falls an unsupported Markdown block back to a paragraph of plain text.
+ */
 function textFallbackBlock(node: MarkdownNode): AdfNode[] {
   const text = plainText(node)
   return text.length > 0 ? paragraphFromText(text) : []
 }
 
+/**
+ * Builds a paragraph containing a single text node, omitting empty text.
+ */
 function paragraphFromText(text: string): AdfNode[] {
   return text.length > 0
     ? [{ type: "paragraph", content: [{ type: "text", text }] }]
     : []
 }
 
+/**
+ * Converts Markdown inline children into ADF inline nodes under the provided
+ * inherited marks.
+ */
 function inlineChildren(
   nodes: MarkdownNode[],
   diagnostics: Diagnostic[],
@@ -292,6 +337,9 @@ function inlineChildren(
   return output
 }
 
+/**
+ * Converts a single Markdown inline node into one or more ADF inline nodes.
+ */
 function inlineNode(
   node: MarkdownNode,
   marks: Array<Record<string, unknown>>,
@@ -349,6 +397,9 @@ function inlineNode(
   }
 }
 
+/**
+ * Creates an ADF text node with optional marks, omitting empty strings.
+ */
 function textNode(
   text: string,
   marks: Array<Record<string, unknown>>,
@@ -359,6 +410,10 @@ function textNode(
   return [node]
 }
 
+/**
+ * Keeps only marks that can legally wrap ADF code text and reports dropped
+ * formatting.
+ */
 function codeMarks(
   marks: Array<Record<string, unknown>>,
   diagnostics: Diagnostic[],
@@ -376,6 +431,9 @@ function codeMarks(
   return [...compatibleMarks, { type: "code" }]
 }
 
+/**
+ * Appends an inline node, merging adjacent text nodes that have identical marks.
+ */
 function appendInline(nodes: AdfNode[], node: AdfNode): void {
   const previous = nodes[nodes.length - 1]
   if (
@@ -391,11 +449,17 @@ function appendInline(nodes: AdfNode[], node: AdfNode): void {
   nodes.push(node)
 }
 
+/**
+ * Extracts human-readable text from a Markdown node tree.
+ */
 function plainText(node: MarkdownNode): string {
   if (typeof node.value === "string") return node.value
   return (node.children ?? []).map((child) => plainText(child)).join("")
 }
 
+/**
+ * Creates a deterministic ADF localId from the Markdown node path.
+ */
 function localIdFromPath(prefix: string, path: string): string {
   const suffix = path.replace(/^\/+/, "").replace(/[^A-Za-z0-9_-]+/g, "-")
   return `${prefix}-${suffix || "root"}`

@@ -17,9 +17,7 @@ INVALID_NESTED_BLOCK_ADF = {
     "content": [
         {
             "type": "paragraph",
-            "content": [
-                {"type": "paragraph", "content": [{"type": "text", "text": "Bad"}]}
-            ],
+            "content": [{"type": "paragraph", "content": [{"type": "text", "text": "Bad"}]}],
         }
     ],
 }

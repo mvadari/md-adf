@@ -33,6 +33,8 @@ class ConversionOptions:
 
 @dataclass(frozen=True)
 class ConversionResult(Generic[T]):
+    """Converter output bundled with any diagnostics produced along the way."""
+
     value: T
     diagnostics: list[Diagnostic] = field(default_factory=list)
 
@@ -41,6 +43,8 @@ ConversionOptionsInput = ConversionOptions | Mapping[str, Any] | None
 
 
 def resolve_conversion_options(options: ConversionOptionsInput = None) -> ConversionOptions:
+    """Apply defaults and normalize mapping-style options into ConversionOptions."""
+
     if options is None:
         return ConversionOptions()
     if isinstance(options, ConversionOptions):
@@ -51,12 +55,8 @@ def resolve_conversion_options(options: ConversionOptionsInput = None) -> Conver
             options.get("markdown_dialect", options.get("markdownDialect", "gfm")),
         )
         profile = cast(str, options.get("profile", "portableMarkdown"))
-        validate_adf = bool(
-            options.get("validate_adf", options.get("validateAdf", True))
-        )
-        normalize_adf = bool(
-            options.get("normalize_adf", options.get("normalizeAdf", True))
-        )
+        validate_adf = bool(options.get("validate_adf", options.get("validateAdf", True)))
+        normalize_adf = bool(options.get("normalize_adf", options.get("normalizeAdf", True)))
         return ConversionOptions(
             markdown_dialect=markdown_dialect,
             profile=profile,
@@ -66,6 +66,8 @@ def resolve_conversion_options(options: ConversionOptionsInput = None) -> Conver
 
 
 def _validate_markdown_dialect(value: str) -> None:
+    """Reject Markdown dialects that the converters do not support."""
+
     if value not in MARKDOWN_DIALECTS:
         raise ValueError(
             f"Unsupported markdown_dialect '{value}'. Supported markdown_dialect is 'gfm'."
@@ -73,6 +75,8 @@ def _validate_markdown_dialect(value: str) -> None:
 
 
 def _validate_profile(value: str) -> None:
+    """Reject conversion profiles outside the shared JS/Python profile set."""
+
     if value not in CONVERSION_PROFILES:
         raise ValueError(
             "Unsupported profile "

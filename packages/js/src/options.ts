@@ -42,6 +42,10 @@ export type ResolvedConversionOptions = Required<ConversionOptions>
 const markdownDialectSet = new Set<string>(markdownDialects)
 const conversionProfileSet = new Set<string>(conversionProfiles)
 
+/**
+ * Applies default conversion options and rejects unsupported dialect/profile
+ * values before a converter starts work.
+ */
 export function resolveConversionOptions(
   options: ConversionOptions = {},
 ): ResolvedConversionOptions {

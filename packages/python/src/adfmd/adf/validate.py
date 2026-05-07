@@ -13,16 +13,22 @@ from .types import AdfDocument
 
 @dataclass(frozen=True)
 class ParseAdfOptions:
+    """Options controlling how unknown values are parsed as ADF."""
+
     validate_adf: bool = True
 
 
 @dataclass(frozen=True)
 class ValidationResult:
+    """Structured success/error result for ADF validation."""
+
     valid: bool
     errors: list[str] = field(default_factory=list)
 
 
 def parse_adf(value: Any, options: Any = None) -> AdfDocument:
+    """Parse an unknown value as an ADF document, optionally validating schema."""
+
     if (
         isinstance(value, dict)
         and value.get("version") == 1
@@ -38,9 +44,9 @@ def parse_adf(value: Any, options: Any = None) -> AdfDocument:
     raise ValueError("Invalid ADF root: expected doc version 1.")
 
 
-def validate_adf(
-    value: Any, options: Any = None
-) -> ValidationResult:
+def validate_adf(value: Any, options: Any = None) -> ValidationResult:
+    """Validate an unknown value as ADF without raising validation errors."""
+
     try:
         parse_adf(value, options)
     except ValueError as exc:
@@ -50,6 +56,8 @@ def validate_adf(
 
 
 def _schema_path() -> Path:
+    """Find the pinned ADF JSON Schema in source or packaged layouts."""
+
     here = Path(__file__).resolve()
     candidates = [
         here.parents[1] / "schemas" / "adf-schema.json",
@@ -67,6 +75,8 @@ _VALIDATOR = Draft4Validator(_SCHEMA)
 
 
 def _validate_enabled(options: Any) -> bool:
+    """Read the validate_adf option from dataclass or mapping-style options."""
+
     if options is None:
         return True
     if isinstance(options, ParseAdfOptions):
@@ -78,6 +88,8 @@ def _validate_enabled(options: Any) -> bool:
 
 
 def _format_schema_error(error: ValidationError) -> str:
+    """Convert a jsonschema validation error into a concise user message."""
+
     path = _json_pointer(error.absolute_path)
     location = f" at {path}" if path else ""
 
@@ -99,6 +111,8 @@ def _format_schema_error(error: ValidationError) -> str:
 
 
 def _most_specific_error(errors: list[ValidationError], value: Any) -> ValidationError:
+    """Choose the schema error that best identifies the invalid ADF location."""
+
     candidates = _leaf_errors(errors)
     relevant = [error for error in candidates if error.validator not in {"anyOf", "oneOf"}]
     matching_type_error = next(
@@ -111,6 +125,8 @@ def _most_specific_error(errors: list[ValidationError], value: Any) -> Validatio
 
 
 def _leaf_errors(errors: list[ValidationError]) -> list[ValidationError]:
+    """Flatten nested anyOf/oneOf validation contexts to leaf errors."""
+
     leaves: list[ValidationError] = []
     for error in errors:
         if error.context:
@@ -121,11 +137,15 @@ def _leaf_errors(errors: list[ValidationError]) -> list[ValidationError]:
 
 
 def _json_pointer(path: Any) -> str:
+    """Render a jsonschema path as an escaped JSON Pointer."""
+
     parts = [str(part).replace("~", "~0").replace("/", "~1") for part in path]
     return "/" + "/".join(parts) if parts else ""
 
 
 def _error_specificity(error: ValidationError) -> int:
+    """Score schema errors so deeper paths are considered more specific."""
+
     base = len(error.absolute_path)
     if error.validator == "required" and "/attrs" in _json_pointer(error.absolute_path):
         return base + 1
@@ -133,6 +153,8 @@ def _error_specificity(error: ValidationError) -> int:
 
 
 def _additional_property(message: str) -> str:
+    """Extract an additional-property name from a jsonschema error message."""
+
     marker = "'"
     start = message.find(marker)
     end = message.find(marker, start + 1)
@@ -140,6 +162,8 @@ def _additional_property(message: str) -> str:
 
 
 def _error_matches_actual_type(error: ValidationError, value: Any) -> bool:
+    """Check whether a required-property error matches the node's actual type."""
+
     if error.validator != "required":
         return False
 
@@ -164,6 +188,8 @@ def _error_matches_actual_type(error: ValidationError, value: Any) -> bool:
 
 
 def _value_at_path(value: Any, path: list[Any]) -> Any:
+    """Resolve a jsonschema path against a nested Python value."""
+
     current = value
     for part in path:
         if isinstance(current, list) and isinstance(part, int):
@@ -176,6 +202,8 @@ def _value_at_path(value: Any, path: list[Any]) -> Any:
 
 
 def _required_property(message: str) -> str:
+    """Extract a required-property name from a jsonschema error message."""
+
     marker = "'"
     start = message.find(marker)
     end = message.find(marker, start + 1)

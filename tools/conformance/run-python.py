@@ -8,6 +8,8 @@ from typing import Any
 
 
 def main() -> int:
+    """Run Python fixtures from the shared conformance manifest."""
+
     root = Path(__file__).parents[2]
     sys.path.insert(0, str(root / "packages" / "python" / "src"))
 
@@ -47,9 +49,7 @@ def main() -> int:
                 ]
 
                 _assert_markdown_equal(markdown_result.value, expected_markdown, test_case["id"])
-                _assert_diagnostics_equal(
-                    actual_diagnostics, expected_diagnostics, test_case["id"]
-                )
+                _assert_diagnostics_equal(actual_diagnostics, expected_diagnostics, test_case["id"])
             elif test_case["direction"] == "md-to-adf":
                 input_markdown = (case_dir / "input.md").read_text(encoding="utf-8")
                 expected_adf = json.loads(
@@ -66,9 +66,7 @@ def main() -> int:
 
                 _assert_valid_adf(adf_result.value, test_case["id"], validate_adf)
                 _assert_adf_equal(adf_result.value, expected_adf, test_case["id"])
-                _assert_diagnostics_equal(
-                    actual_diagnostics, expected_diagnostics, test_case["id"]
-                )
+                _assert_diagnostics_equal(actual_diagnostics, expected_diagnostics, test_case["id"])
             elif test_case["direction"] == "roundtrip":
                 input_adf = json.loads((case_dir / "input.adf.json").read_text(encoding="utf-8"))
                 expected_adf = json.loads(
@@ -122,6 +120,8 @@ def main() -> int:
 
 
 def _assert_markdown_equal(actual: str, expected: str, test_id: str) -> None:
+    """Assert Markdown strings match after newline normalization."""
+
     normalized_actual = _normalize_markdown(actual)
     normalized_expected = _normalize_markdown(expected)
     if normalized_actual != normalized_expected:
@@ -133,6 +133,8 @@ def _assert_markdown_equal(actual: str, expected: str, test_id: str) -> None:
 
 
 def _assert_adf_equal(actual: Any, expected: Any, test_id: str) -> None:
+    """Assert ADF values match after normalization."""
+
     normalized_actual = _normalize_adf(actual)
     normalized_expected = _normalize_adf(expected)
     if normalized_actual != normalized_expected:
@@ -144,6 +146,8 @@ def _assert_adf_equal(actual: Any, expected: Any, test_id: str) -> None:
 
 
 def _assert_diagnostics_equal(actual: Any, expected: Any, test_id: str) -> None:
+    """Assert diagnostics match after reducing them to stable fields."""
+
     normalized_actual = _normalize_diagnostics(actual)
     normalized_expected = _normalize_diagnostics(expected)
     if normalized_actual != normalized_expected:
@@ -155,19 +159,23 @@ def _assert_diagnostics_equal(actual: Any, expected: Any, test_id: str) -> None:
 
 
 def _assert_valid_adf(actual: Any, test_id: str, validate_adf: Any) -> None:
+    """Assert a converter produced schema-valid ADF."""
+
     validation = validate_adf(actual)
     if not validation.valid:
-        raise AssertionError(
-            f"{test_id} produced invalid ADF: {'; '.join(validation.errors)}"
-        )
+        raise AssertionError(f"{test_id} produced invalid ADF: {'; '.join(validation.errors)}")
 
 
 def _normalize_markdown(markdown: str) -> str:
+    """Normalize line endings and trim one trailing newline for comparison."""
+
     normalized = markdown.replace("\r\n", "\n").replace("\r", "\n")
     return normalized[:-1] if normalized.endswith("\n") else normalized
 
 
 def _normalize_json(value: Any) -> Any:
+    """Recursively sort object keys for stable JSON comparison."""
+
     if isinstance(value, list):
         return [_normalize_json(item) for item in value]
     if isinstance(value, dict):
@@ -176,10 +184,14 @@ def _normalize_json(value: Any) -> Any:
 
 
 def _normalize_adf(value: Any) -> Any:
+    """Normalize ADF by merging adjacent compatible text nodes and sorting keys."""
+
     return _normalize_json(_merge_adjacent_text_nodes(value))
 
 
 def _merge_adjacent_text_nodes(value: Any) -> Any:
+    """Merge adjacent ADF text nodes that have identical marks."""
+
     if isinstance(value, list):
         merged: list[Any] = []
         for item in [_merge_adjacent_text_nodes(entry) for entry in value]:
@@ -202,6 +214,8 @@ def _merge_adjacent_text_nodes(value: Any) -> Any:
 
 
 def _normalize_diagnostics(diagnostics: Any) -> Any:
+    """Keep only stable diagnostic fields for fixture comparisons."""
+
     return [
         {
             key: diagnostic[key]
@@ -213,6 +227,8 @@ def _normalize_diagnostics(diagnostics: Any) -> Any:
 
 
 def _diagnostic_to_json(diagnostic: Any) -> dict[str, Any]:
+    """Convert a diagnostic dataclass to JSON, omitting None values."""
+
     return {key: value for key, value in asdict(diagnostic).items() if value is not None}
 
 

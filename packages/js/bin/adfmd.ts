@@ -15,6 +15,9 @@ type CliArgs = {
 
 const validProfiles = new Set(["jira", "confluence", "portableMarkdown"])
 
+/**
+ * Runs the CLI command, wiring file/stdin IO to the requested converter.
+ */
 async function main(argv: string[]): Promise<number> {
   let args: CliArgs
   try {
@@ -69,6 +72,10 @@ async function main(argv: string[]): Promise<number> {
   }
 }
 
+/**
+ * Parses positional command arguments and supported flags into a typed CLI
+ * argument object.
+ */
 function parseArgs(argv: string[]): CliArgs {
   const [command, ...rest] = argv
   if (!isCommand(command)) {
@@ -122,10 +129,16 @@ function parseArgs(argv: string[]): CliArgs {
   return parsed
 }
 
+/**
+ * Checks whether a string is one of the supported CLI commands.
+ */
 function isCommand(value: string | undefined): value is Command {
   return value === "to-md" || value === "to-adf" || value === "validate-adf"
 }
 
+/**
+ * Reads command input from a file path when present, otherwise from stdin.
+ */
 async function readInput(path: string | undefined): Promise<string> {
   if (path) return readFile(path, "utf8")
   return new Promise((resolve, reject) => {
@@ -139,6 +152,9 @@ async function readInput(path: string | undefined): Promise<string> {
   })
 }
 
+/**
+ * Writes command output to a file path when present, otherwise to stdout.
+ */
 async function writeOutput(
   path: string | undefined,
   value: string,
@@ -150,16 +166,25 @@ async function writeOutput(
   process.stdout.write(value)
 }
 
+/**
+ * Emits converter diagnostics as newline-delimited JSON on stderr.
+ */
 function writeDiagnostics(diagnostics: Diagnostic[]): void {
   for (const diagnostic of diagnostics) {
     console.error(JSON.stringify(diagnostic))
   }
 }
 
+/**
+ * Returns true when any diagnostic should cause a non-zero CLI exit.
+ */
 function hasErrorDiagnostics(diagnostics: Diagnostic[]): boolean {
   return diagnostics.some((diagnostic) => diagnostic.severity === "error")
 }
 
+/**
+ * Prints command usage help to stderr.
+ */
 function printUsage(): void {
   console.error("Usage:")
   console.error(

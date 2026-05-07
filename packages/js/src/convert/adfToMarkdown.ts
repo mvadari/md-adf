@@ -48,6 +48,10 @@ const supportedNodes = new Set([
 const markOrder = ["link", "strong", "em", "strike"] as const
 const supportedMarks = new Set(["strong", "em", "strike", "code", "link"])
 
+/**
+ * Converts an ADF document into Markdown and returns diagnostics for validation
+ * errors or lossy fallback rendering.
+ */
 export function adfToMarkdown(
   adf: AdfDocument | unknown,
   options: ConversionOptions = {},
@@ -74,6 +78,9 @@ export function adfToMarkdown(
   }
 }
 
+/**
+ * Renders a sequence of ADF block nodes separated by Markdown blank lines.
+ */
 function renderBlocks(
   nodes: AdfNode[] = [],
   diagnostics: Diagnostic[],
@@ -85,6 +92,10 @@ function renderBlocks(
     .join("\n\n")
 }
 
+/**
+ * Renders one ADF block node into Markdown, recording diagnostics for unsupported
+ * or invalid block content.
+ */
 function renderBlock(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -168,6 +179,9 @@ function renderBlock(
   }
 }
 
+/**
+ * Renders an ADF panel as a Markdown blockquote fallback.
+ */
 function renderPanel(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -186,6 +200,10 @@ function renderPanel(
   )
 }
 
+/**
+ * Renders an ADF expand by flattening its title and content into normal
+ * Markdown blocks.
+ */
 function renderExpand(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -208,6 +226,10 @@ function renderExpand(
   return [summary, content].filter((block) => block.length > 0).join("\n\n")
 }
 
+/**
+ * Renders ADF card nodes as Markdown links when a URL is available, otherwise
+ * as text.
+ */
 function renderCard(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -238,6 +260,10 @@ function renderCard(
   return escapeMarkdownText(label)
 }
 
+/**
+ * Renders rectangular, simple ADF tables as GFM tables and omits unsupported
+ * table shapes.
+ */
 function renderTable(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -334,14 +360,23 @@ function renderTable(
   return [header, separator, ...body].join("\n")
 }
 
+/**
+ * Renders one Markdown table row from already escaped cell text.
+ */
 function renderTableRow(cells: string[]): string {
   return `| ${cells.join(" | ")} |`
 }
 
+/**
+ * Escapes characters that would break a GFM table cell.
+ */
 function escapeTableCellMarkdown(markdown: string): string {
   return markdown.replace(/\n/g, " ").replace(/(^|[^\\])\|/g, "$1\\|")
 }
 
+/**
+ * Renders an ADF taskList as a GFM task list.
+ */
 function renderTaskList(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -378,6 +413,9 @@ function renderTaskList(
     .join("\n")
 }
 
+/**
+ * Renders each media child in an ADF mediaGroup as its own fallback block.
+ */
 function renderMediaGroup(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -391,6 +429,9 @@ function renderMediaGroup(
     .join("\n\n")
 }
 
+/**
+ * Renders the media child inside an ADF mediaSingle node.
+ */
 function renderMediaSingle(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -410,6 +451,10 @@ function renderMediaSingle(
   return renderMedia(media, diagnostics, `${path}/content/0`)
 }
 
+/**
+ * Renders an ADF media node as a Markdown link when it has a resolvable URL,
+ * otherwise as escaped fallback text.
+ */
 function renderMedia(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -450,12 +495,19 @@ function renderMedia(
   return escapeMarkdownText(label)
 }
 
+/**
+ * Finds an href from the first link mark on a node.
+ */
 function linkMarkHref(marks: AdfMark[]): string | undefined {
   const link = marks.find((mark) => mark.type === "link")
   const attrs = link?.attrs as Record<string, unknown> | undefined
   return typeof attrs?.href === "string" ? attrs.href : undefined
 }
 
+/**
+ * Renders ADF ordered and bullet lists, including nested block continuation
+ * indentation.
+ */
 function renderList(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -485,6 +537,10 @@ function renderList(
     .join("\n")
 }
 
+/**
+ * Indents all lines after the first so Markdown list item continuations remain
+ * inside the list item.
+ */
 function indentListContinuation(text: string): string {
   const lines = text.split("\n")
   return lines
@@ -492,6 +548,9 @@ function indentListContinuation(text: string): string {
     .join("\n")
 }
 
+/**
+ * Prefixes each line of text for blockquote-style Markdown rendering.
+ */
 function prefixLines(text: string, prefix: string): string {
   return text
     .split("\n")
@@ -499,6 +558,9 @@ function prefixLines(text: string, prefix: string): string {
     .join("\n")
 }
 
+/**
+ * Renders ADF inline content by concatenating each child inline node.
+ */
 function renderInlineContent(
   nodes: AdfNode[],
   diagnostics: Diagnostic[],
@@ -511,6 +573,9 @@ function renderInlineContent(
     .join("")
 }
 
+/**
+ * Renders one ADF inline node into Markdown text or a fallback representation.
+ */
 function renderInline(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -549,10 +614,17 @@ function renderInline(
   }
 }
 
+/**
+ * Checks whether a table cell contains inline content that cannot be safely
+ * represented in a GFM table.
+ */
 function isUnsupportedTableInline(node: AdfNode): boolean {
   return !["text", "mention", "emoji", "date", "status"].includes(node.type)
 }
 
+/**
+ * Renders an ADF mention as fallback text.
+ */
 function renderMention(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -568,6 +640,9 @@ function renderMention(
   return escapeMarkdownText(text)
 }
 
+/**
+ * Renders an ADF emoji as fallback text.
+ */
 function renderEmoji(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -581,6 +656,9 @@ function renderEmoji(
   return escapeMarkdownText(text)
 }
 
+/**
+ * Renders an ADF date as ISO date text when the timestamp can be parsed.
+ */
 function renderDate(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -594,6 +672,9 @@ function renderDate(
   return escapeMarkdownText(text)
 }
 
+/**
+ * Renders an ADF status node as its label text and records dropped color data.
+ */
 function renderStatus(
   node: AdfNode,
   diagnostics: Diagnostic[],
@@ -615,6 +696,10 @@ function renderStatus(
   return escapeMarkdownText(text)
 }
 
+/**
+ * Records that a rich inline ADF node had to be rendered as a simpler Markdown
+ * fallback.
+ */
 function warnInlineFallback(
   diagnostics: Diagnostic[],
   path: string,
@@ -630,6 +715,9 @@ function warnInlineFallback(
   })
 }
 
+/**
+ * Records unsupported attributes that were not represented in fallback output.
+ */
 function warnDroppedAttrs(
   diagnostics: Diagnostic[],
   path: string,
@@ -651,15 +739,24 @@ function warnDroppedAttrs(
   })
 }
 
+/**
+ * Returns a string only when it is non-empty.
+ */
 function nonEmptyString(value: unknown): string | undefined {
   return typeof value === "string" && value.length > 0 ? value : undefined
 }
 
+/**
+ * Turns a mention id into display text when no explicit mention text exists.
+ */
 function mentionIdFallback(id: string | undefined): string | undefined {
   if (!id) return undefined
   return id.startsWith("@") ? id : `@${id}`
 }
 
+/**
+ * Formats a numeric timestamp as YYYY-MM-DD, falling back to the raw timestamp.
+ */
 function dateTextFromTimestamp(timestamp: string): string {
   const milliseconds = Number(timestamp)
   if (Number.isFinite(milliseconds)) {
@@ -669,11 +766,17 @@ function dateTextFromTimestamp(timestamp: string): string {
   return timestamp
 }
 
+/**
+ * Extracts a card URL from either top-level attrs or nested smart-link data.
+ */
 function cardUrl(attrs: Record<string, unknown>): string | undefined {
   const data = attrs.data as Record<string, unknown> | undefined
   return nonEmptyString(attrs.url) ?? nonEmptyString(data?.url)
 }
 
+/**
+ * Extracts a human-readable card label from known card attr locations.
+ */
 function cardLabel(attrs: Record<string, unknown>): string | undefined {
   const data = attrs.data as Record<string, unknown> | undefined
   return (
@@ -685,6 +788,9 @@ function cardLabel(attrs: Record<string, unknown>): string | undefined {
   )
 }
 
+/**
+ * Applies supported ADF marks to escaped Markdown text in a deterministic order.
+ */
 function renderMarkedText(
   text: string,
   marks: AdfMark[],
@@ -751,6 +857,9 @@ function renderMarkedText(
   return rendered
 }
 
+/**
+ * Collects plain text from codeBlock children, omitting unsupported child nodes.
+ */
 function collectPlainText(
   nodes: AdfNode[],
   diagnostics: Diagnostic[],

@@ -23,6 +23,10 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
+/**
+ * Recursively checks a directory for TypeScript files whose base names are not
+ * camelCase.
+ */
 async function checkDirectory(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
 

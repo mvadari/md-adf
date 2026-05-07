@@ -23,9 +23,7 @@ def test_validate_adf_reports_stable_errors_for_invalid_adf_fixtures() -> None:
 
 
 def test_parse_adf_can_skip_pinned_schema_validation_when_requested() -> None:
-    input_adf = _read_json(
-        INVALID_FIXTURES / "block-inside-paragraph" / "input.adf.json"
-    )
+    input_adf = _read_json(INVALID_FIXTURES / "block-inside-paragraph" / "input.adf.json")
 
     assert validate_adf(input_adf, {"validate_adf": False}).valid is True
     assert parse_adf(input_adf, {"validate_adf": False}) is input_adf

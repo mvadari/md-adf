@@ -14,10 +14,14 @@ PROFILES = {"jira", "confluence", "portableMarkdown"}
 
 
 class CliError(ValueError):
+    """Raised when CLI arguments are invalid."""
+
     pass
 
 
 class CliArgs:
+    """Parsed CLI command, paths, and option values."""
+
     def __init__(
         self,
         command: str,
@@ -32,6 +36,8 @@ class CliArgs:
 
 
 def main() -> int:
+    """Run the CLI command and return a process exit code."""
+
     try:
         args = parse_args(sys.argv[1:])
     except CliError as exc:
@@ -83,6 +89,8 @@ def main() -> int:
 
 
 def parse_args(argv: list[str]) -> CliArgs:
+    """Parse positional command arguments and supported flags."""
+
     if not argv or argv[0] not in COMMANDS:
         raise CliError("Expected command: to-md, to-adf, or validate-adf.")
 
@@ -125,12 +133,16 @@ def parse_args(argv: list[str]) -> CliArgs:
 
 
 def read_input(path: str | None) -> str:
+    """Read command input from a file path or stdin."""
+
     if path is not None:
         return Path(path).read_text(encoding="utf-8")
     return sys.stdin.read()
 
 
 def write_output(path: str | None, value: str) -> None:
+    """Write command output to a file path or stdout."""
+
     if path is not None:
         Path(path).write_text(value, encoding="utf-8")
         return
@@ -138,18 +150,22 @@ def write_output(path: str | None, value: str) -> None:
 
 
 def write_diagnostics(diagnostics: list[Diagnostic]) -> None:
+    """Emit converter diagnostics as newline-delimited JSON on stderr."""
+
     for diagnostic in diagnostics:
-        payload = {
-            key: value for key, value in asdict(diagnostic).items() if value is not None
-        }
+        payload = {key: value for key, value in asdict(diagnostic).items() if value is not None}
         print(json.dumps(payload), file=sys.stderr)
 
 
 def has_error_diagnostics(diagnostics: list[Diagnostic]) -> bool:
+    """Return whether diagnostics include an error severity."""
+
     return any(diagnostic.severity == "error" for diagnostic in diagnostics)
 
 
 def print_usage() -> None:
+    """Print command usage help to stderr."""
+
     print("Usage:", file=sys.stderr)
     print(
         "  adfmd to-md [input] [--output output.md] [--profile portableMarkdown]",

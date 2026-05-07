@@ -19,6 +19,8 @@ MARKDOWN_PARSER = mistune.create_markdown(
 def markdown_to_adf(
     markdown: str, options: ConversionOptionsInput = None
 ) -> ConversionResult[AdfDocument]:
+    """Convert Markdown text into an ADF document with fallback diagnostics."""
+
     resolve_conversion_options(options)
     diagnostics: list[Diagnostic] = []
     tree = cast(list[MarkdownNode], MARKDOWN_PARSER(markdown))
@@ -33,15 +35,17 @@ def markdown_to_adf(
 def _block_children(
     nodes: list[MarkdownNode], diagnostics: list[Diagnostic], path: str
 ) -> list[AdfNode]:
+    """Convert a list of Markdown block nodes into ADF block nodes."""
+
     output: list[AdfNode] = []
     for index, node in enumerate(nodes):
         output.extend(_block_node(node, diagnostics, f"{path}/{index}"))
     return output
 
 
-def _block_node(
-    node: MarkdownNode, diagnostics: list[Diagnostic], path: str
-) -> list[AdfNode]:
+def _block_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> list[AdfNode]:
+    """Convert one Markdown block node into zero or more ADF block nodes."""
+
     node_type = node.get("type")
 
     if node_type == "blank_line":
@@ -81,9 +85,7 @@ def _block_node(
         return [
             {
                 "type": "blockquote",
-                "content": _block_children(
-                    _children(node), diagnostics, f"{path}/content"
-                ),
+                "content": _block_children(_children(node), diagnostics, f"{path}/content"),
             }
         ]
 
@@ -103,12 +105,12 @@ def _block_node(
 
 
 def _list_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> AdfNode:
+    """Convert a Markdown ordered, bullet, or task list to an ADF list node."""
+
     attrs = _attrs(node)
     ordered = bool(attrs.get("ordered", False))
     items = [
-        child
-        for child in _children(node)
-        if child.get("type") in {"list_item", "task_list_item"}
+        child for child in _children(node) if child.get("type") in {"list_item", "task_list_item"}
     ]
     if (
         not ordered
@@ -125,8 +127,7 @@ def _list_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> 
                 code="TaskListFallback",
                 path=path,
                 message=(
-                    "Mixed or complex GFM task list items were converted to "
-                    "bullet list items."
+                    "Mixed or complex GFM task list items were converted to bullet list items."
                 ),
                 fallback="bulletList",
             )
@@ -148,6 +149,8 @@ def _list_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> 
 def _task_list_node(
     items: list[MarkdownNode], diagnostics: list[Diagnostic], path: str
 ) -> AdfNode | None:
+    """Convert a simple GFM task list to an ADF taskList when possible."""
+
     task_items = [
         _task_item_node(item, diagnostics, f"{path}/content/{index}")
         for index, item in enumerate(items)
@@ -171,9 +174,9 @@ def _task_list_node(
     }
 
 
-def _task_item_node(
-    node: MarkdownNode, diagnostics: list[Diagnostic], path: str
-) -> AdfNode | None:
+def _task_item_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> AdfNode | None:
+    """Convert one simple Markdown task item into an ADF taskItem."""
+
     children = _children(node)
     if len(children) != 1 or children[0].get("type") not in {"block_text", "paragraph"}:
         return None
@@ -188,9 +191,9 @@ def _task_item_node(
     }
 
 
-def _list_item_node(
-    node: MarkdownNode, diagnostics: list[Diagnostic], path: str
-) -> AdfNode:
+def _list_item_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> AdfNode:
+    """Convert a Markdown list item, preserving task state as fallback text."""
+
     content = _block_children(_children(node), diagnostics, f"{path}/content")
     if node.get("type") == "task_list_item":
         _prepend_task_fallback_marker(content, _attrs(node).get("checked") is True)
@@ -201,6 +204,8 @@ def _list_item_node(
 
 
 def _prepend_task_fallback_marker(content: list[AdfNode], checked: bool) -> None:
+    """Insert a checked or unchecked marker into fallback list item content."""
+
     marker = "[x] " if checked else "[ ] "
     if not content or content[0].get("type") != "paragraph":
         content.insert(0, {"type": "paragraph", "content": [{"type": "text", "text": marker}]})
@@ -209,6 +214,8 @@ def _prepend_task_fallback_marker(content: list[AdfNode], checked: bool) -> None
 
 
 def _code_block_node(node: MarkdownNode) -> AdfNode:
+    """Convert a Markdown code block into an ADF codeBlock."""
+
     code_block: AdfNode = {
         "type": "codeBlock",
         "content": [{"type": "text", "text": str(node.get("raw", "")).removesuffix("\n")}],
@@ -220,15 +227,15 @@ def _code_block_node(node: MarkdownNode) -> AdfNode:
 
 
 def _table_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> AdfNode:
+    """Convert a GFM table into an ADF table and report dropped alignment."""
+
     rows: list[AdfNode] = []
     alignments: list[Any] = []
 
     for table_child in _children(node):
         if table_child.get("type") == "table_head":
             rows.append(_table_row_node(table_child, header=True, diagnostics=diagnostics))
-            alignments = [
-                _attrs(cell).get("align") for cell in _children(table_child)
-            ]
+            alignments = [_attrs(cell).get("align") for cell in _children(table_child)]
         elif table_child.get("type") == "table_body":
             rows.extend(
                 _table_row_node(row, header=False, diagnostics=diagnostics)
@@ -243,8 +250,7 @@ def _table_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) ->
                 code="UnsupportedTableAlignment",
                 path=path,
                 message=(
-                    "Markdown table column alignment is not representable in ADF "
-                    "and was omitted."
+                    "Markdown table column alignment is not representable in ADF and was omitted."
                 ),
                 fallback="omit",
             )
@@ -252,9 +258,9 @@ def _table_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) ->
     return table
 
 
-def _table_row_node(
-    node: MarkdownNode, header: bool, diagnostics: list[Diagnostic]
-) -> AdfNode:
+def _table_row_node(node: MarkdownNode, header: bool, diagnostics: list[Diagnostic]) -> AdfNode:
+    """Convert one Markdown table row into an ADF tableRow."""
+
     cells: list[AdfNode] = []
     for cell in _children(node):
         if cell.get("type") != "table_cell":
@@ -273,11 +279,15 @@ def _table_row_node(
 
 
 def _text_fallback_block(node: MarkdownNode) -> list[AdfNode]:
+    """Fall an unsupported Markdown block back to a paragraph of plain text."""
+
     text = _plain_text(node)
     return _paragraph_from_text(text) if text else []
 
 
 def _paragraph_from_text(text: str) -> list[AdfNode]:
+    """Build a paragraph containing a single text node, omitting empty text."""
+
     if not text:
         return []
     return [{"type": "paragraph", "content": [{"type": "text", "text": text}]}]
@@ -288,6 +298,8 @@ def _inline_children(
     diagnostics: list[Diagnostic],
     marks: list[dict[str, Any]] | None = None,
 ) -> list[AdfNode]:
+    """Convert Markdown inline children into ADF inline nodes."""
+
     output: list[AdfNode] = []
     active_marks = marks or []
     for node in nodes:
@@ -299,6 +311,8 @@ def _inline_children(
 def _inline_node(
     node: MarkdownNode, marks: list[dict[str, Any]], diagnostics: list[Diagnostic]
 ) -> list[AdfNode]:
+    """Convert one Markdown inline node into one or more ADF inline nodes."""
+
     node_type = node.get("type")
 
     if node_type == "text":
@@ -308,14 +322,10 @@ def _inline_node(
         return _inline_children(_children(node), diagnostics, [*marks, {"type": "em"}])
 
     if node_type == "strong":
-        return _inline_children(
-            _children(node), diagnostics, [*marks, {"type": "strong"}]
-        )
+        return _inline_children(_children(node), diagnostics, [*marks, {"type": "strong"}])
 
     if node_type == "strikethrough":
-        return _inline_children(
-            _children(node), diagnostics, [*marks, {"type": "strike"}]
-        )
+        return _inline_children(_children(node), diagnostics, [*marks, {"type": "strike"}])
 
     if node_type == "codespan":
         return _text_node(str(node.get("raw", "")), _code_marks(marks, diagnostics))
@@ -365,6 +375,8 @@ def _inline_node(
 
 
 def _text_node(text: str, marks: list[dict[str, Any]]) -> list[AdfNode]:
+    """Create an ADF text node with optional marks, omitting empty strings."""
+
     if not text:
         return []
     node: AdfNode = {"type": "text", "text": text}
@@ -373,9 +385,9 @@ def _text_node(text: str, marks: list[dict[str, Any]]) -> list[AdfNode]:
     return [node]
 
 
-def _code_marks(
-    marks: list[dict[str, Any]], diagnostics: list[Diagnostic]
-) -> list[dict[str, Any]]:
+def _code_marks(marks: list[dict[str, Any]], diagnostics: list[Diagnostic]) -> list[dict[str, Any]]:
+    """Keep only marks that can legally wrap ADF code text."""
+
     compatible_marks = [mark for mark in marks if mark.get("type") == "link"]
     if len(compatible_marks) != len(marks):
         diagnostics.append(
@@ -393,6 +405,8 @@ def _code_marks(
 
 
 def _append_inline(nodes: list[AdfNode], node: AdfNode) -> None:
+    """Append an inline node, merging adjacent text with identical marks."""
+
     previous = nodes[-1] if nodes else None
     if (
         previous is not None
@@ -406,6 +420,8 @@ def _append_inline(nodes: list[AdfNode], node: AdfNode) -> None:
 
 
 def _plain_text(node: MarkdownNode) -> str:
+    """Extract human-readable text from a Markdown node tree."""
+
     raw = node.get("raw")
     if isinstance(raw, str):
         return raw
@@ -413,16 +429,22 @@ def _plain_text(node: MarkdownNode) -> str:
 
 
 def _children(node: MarkdownNode) -> list[MarkdownNode]:
+    """Return a Markdown node's children as a typed list."""
+
     children = node.get("children")
     return cast(list[MarkdownNode], children if isinstance(children, list) else [])
 
 
 def _attrs(node: MarkdownNode) -> dict[str, Any]:
+    """Return a Markdown node's attrs as a dictionary."""
+
     attrs = node.get("attrs")
     return cast(dict[str, Any], attrs if isinstance(attrs, dict) else {})
 
 
 def _local_id_from_path(prefix: str, path: str) -> str:
+    """Create a deterministic ADF localId from the Markdown node path."""
+
     suffix = path.strip("/")
     suffix = "".join(char if char.isalnum() or char in {"_", "-"} else "-" for char in suffix)
     return f"{prefix}-{suffix or 'root'}"

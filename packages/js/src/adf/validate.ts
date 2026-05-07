@@ -30,6 +30,10 @@ const Ajv = require("ajv-draft-04")
 const ajv = new Ajv({ allErrors: true, strict: false })
 const validatePinnedAdfSchema = ajv.compile(schema as AnySchema)
 
+/**
+ * Parses an unknown value as an ADF document, optionally validating it against
+ * the pinned schema before returning the typed document.
+ */
 export function parseAdf(
   value: unknown,
   options: ParseAdfOptions = {},
@@ -55,6 +59,10 @@ export function parseAdf(
   throw new Error("Invalid ADF root: expected doc version 1.")
 }
 
+/**
+ * Validates an unknown value as ADF and returns a structured success/error
+ * result instead of throwing.
+ */
 export function validateAdf(
   value: unknown,
   options: ParseAdfOptions = {},
@@ -70,6 +78,10 @@ export function validateAdf(
   }
 }
 
+/**
+ * Finds and loads the pinned ADF schema from either source or built package
+ * layouts.
+ */
 function loadPinnedAdfSchema(): unknown {
   const here = dirname(fileURLToPath(import.meta.url))
   const candidates = [
@@ -87,6 +99,9 @@ function loadPinnedAdfSchema(): unknown {
   throw new Error("Pinned ADF JSON Schema not found.")
 }
 
+/**
+ * Converts AJV schema errors into a short human-readable validation message.
+ */
 function formatSchemaError(errors: SchemaError[], value: unknown): string {
   const error = mostSpecificError(errors, value)
   const path =
@@ -117,6 +132,9 @@ function formatSchemaError(errors: SchemaError[], value: unknown): string {
   }
 }
 
+/**
+ * Picks the schema error that most closely describes the invalid ADF location.
+ */
 function mostSpecificError(errors: SchemaError[], value: unknown): SchemaError {
   const relevantErrors = errors.filter(
     (error) => error.keyword !== "anyOf" && error.keyword !== "oneOf",
@@ -134,6 +152,10 @@ function mostSpecificError(errors: SchemaError[], value: unknown): SchemaError {
   )
 }
 
+/**
+ * Checks whether a required-property error applies to the node or mark type at
+ * the reported path.
+ */
 function errorMatchesActualType(error: SchemaError, value: unknown): boolean {
   if (error.keyword !== "required" || !error.schemaPath) return false
 
@@ -150,6 +172,10 @@ function errorMatchesActualType(error: SchemaError, value: unknown): boolean {
   )
 }
 
+/**
+ * Resolves a JSON Pointer against a value so schema errors can be matched to
+ * the actual ADF node.
+ */
 function valueAtPointer(value: unknown, pointer: string): unknown {
   if (pointer === "") return value
   return pointer
@@ -165,6 +191,9 @@ function valueAtPointer(value: unknown, pointer: string): unknown {
     }, value)
 }
 
+/**
+ * Scores schema errors by path depth so deeper, more specific failures win.
+ */
 function errorSpecificity(error: SchemaError): number {
   const base = pathDepth(error.instancePath ?? "")
   return error.keyword === "required" &&
@@ -173,6 +202,9 @@ function errorSpecificity(error: SchemaError): number {
     : base
 }
 
+/**
+ * Counts the number of JSON Pointer path segments.
+ */
 function pathDepth(path: string): number {
   return path === "" ? 0 : path.split("/").length
 }
