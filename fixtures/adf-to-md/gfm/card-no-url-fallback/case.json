@@ -6,7 +6,7 @@
   "options": {
     "markdownDialect": "gfm"
   },
-  "features": ["blockCard", "inlineCard", "cardFallback"],
+  "features": ["blockCard", "embedCard", "inlineCard", "cardFallback"],
   "expectedLoss": true,
   "skip": {},
   "xfail": {}

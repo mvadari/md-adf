@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-07T17:34:32.208Z",
+  "generatedAt": "2026-05-11T14:05:48.396Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -17,6 +17,7 @@
       "direction": "adf-to-md",
       "features": [
         "blockCard",
+        "embedCard",
         "inlineCard",
         "cardFallback"
       ]
@@ -51,6 +52,7 @@
       "direction": "adf-to-md",
       "features": [
         "expand",
+        "nestedExpand",
         "expandFallback"
       ]
     },

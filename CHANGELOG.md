@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Added shared fixture coverage for `nestedExpand` flattening and no-URL `embedCard` text fallback.
+- Documented conservative panel, expand, nested expand, and card ADF-to-Markdown fallbacks.
+
 ### Fixed
 
 - JS: Restored a browser-safe root export map for the npm package while keeping `parseAdf` and `validateAdf` available from the Node root import.

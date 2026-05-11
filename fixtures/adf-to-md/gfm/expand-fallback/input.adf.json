@@ -35,6 +35,23 @@
               ]
             }
           ]
+        },
+        {
+          "type": "nestedExpand",
+          "attrs": {
+            "title": "Nested details"
+          },
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Inside nested expand"
+                }
+              ]
+            }
+          ]
         }
       ]
     }

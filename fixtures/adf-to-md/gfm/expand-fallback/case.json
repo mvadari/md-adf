@@ -6,7 +6,7 @@
   "options": {
     "markdownDialect": "gfm"
   },
-  "features": ["expand", "expandFallback"],
+  "features": ["expand", "nestedExpand", "expandFallback"],
   "expectedLoss": true,
   "skip": {},
   "xfail": {}

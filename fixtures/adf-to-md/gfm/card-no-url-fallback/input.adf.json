@@ -11,6 +11,14 @@
       }
     },
     {
+      "type": "embedCard",
+      "attrs": {
+        "data": {
+          "title": "Embed preview"
+        }
+      }
+    },
+    {
       "type": "paragraph",
       "content": [
         {
