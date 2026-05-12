@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0 - 2026-05-12
+
 ### Added
 
 - Added shared fixture coverage for `nestedExpand` flattening and no-URL `embedCard` text fallback.
