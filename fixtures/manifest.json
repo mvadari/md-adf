@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-11T14:05:48.396Z",
+  "generatedAt": "2026-05-12T16:06:03.187Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -255,6 +255,45 @@
         "text",
         "strong",
         "link"
+      ]
+    },
+    {
+      "id": "md-to-adf.gfm.details-missing-summary",
+      "path": "md-to-adf/gfm/details-missing-summary/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "details",
+        "detailsFallback",
+        "paragraph",
+        "text"
+      ]
+    },
+    {
+      "id": "md-to-adf.gfm.details-simple",
+      "path": "md-to-adf/gfm/details-simple/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "details",
+        "summary",
+        "expand",
+        "paragraph",
+        "text",
+        "strong"
+      ]
+    },
+    {
+      "id": "md-to-adf.gfm.details-with-list",
+      "path": "md-to-adf/gfm/details-with-list/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "details",
+        "summary",
+        "expand",
+        "paragraph",
+        "bulletList",
+        "listItem",
+        "text",
+        "strong"
       ]
     },
     {

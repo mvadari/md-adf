@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.details-with-list",
+  "direction": "md-to-adf",
+  "description": "Converts a Markdown details block with list content to an ADF expand.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["details", "summary", "expand", "paragraph", "bulletList", "listItem", "text", "strong"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

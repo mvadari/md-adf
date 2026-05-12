@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from html import unescape
 from typing import Any, cast
 
 import mistune
@@ -38,9 +39,77 @@ def _block_children(
     """Convert a list of Markdown block nodes into ADF block nodes."""
 
     output: list[AdfNode] = []
-    for index, node in enumerate(nodes):
+    index = 0
+    while index < len(nodes):
+        details = _details_block(nodes, index, diagnostics, path)
+        if details is not None:
+            details_nodes, consumed = details
+            output.extend(details_nodes)
+            index += consumed
+            continue
+        node = nodes[index]
         output.extend(_block_node(node, diagnostics, f"{path}/{index}"))
+        index += 1
     return output
+
+
+def _details_block(
+    nodes: list[MarkdownNode], index: int, diagnostics: list[Diagnostic], path: str
+) -> tuple[list[AdfNode], int] | None:
+    """Convert a simple raw HTML details sequence to ADF expand when possible."""
+
+    opening_raw = _html_raw(nodes[index])
+    if opening_raw is None or not _is_details_opening(opening_raw):
+        return None
+
+    node_path = f"{path}/{index}"
+    closing_index = next(
+        (
+            candidate_index
+            for candidate_index, node in enumerate(nodes[index + 1 :], start=index + 1)
+            if _is_details_closing(_html_raw(node) or "")
+        ),
+        -1,
+    )
+    if closing_index == -1:
+        _warn_details_fallback(diagnostics, node_path)
+        return None
+
+    summary = _summary_title(opening_raw)
+    inner_nodes = nodes[index + 1 : closing_index]
+
+    def fallback() -> tuple[list[AdfNode], int]:
+        fallback_nodes = [
+            *_paragraph_from_text(opening_raw.strip()),
+            *_block_children(inner_nodes, diagnostics, f"{node_path}/content"),
+            *_paragraph_from_text((_html_raw(nodes[closing_index]) or "").strip()),
+        ]
+        return fallback_nodes, closing_index - index + 1
+
+    if (
+        path != "/content"
+        or summary is None
+        or not inner_nodes
+        or any(_is_details_boundary(_html_raw(node) or "") for node in inner_nodes)
+    ):
+        _warn_details_fallback(diagnostics, node_path)
+        return fallback()
+
+    content = _block_children(inner_nodes, diagnostics, f"{node_path}/content")
+    if not content:
+        _warn_details_fallback(diagnostics, node_path)
+        return fallback()
+
+    return (
+        [
+            {
+                "type": "expand",
+                "attrs": {"title": summary},
+                "content": content,
+            }
+        ],
+        closing_index - index + 1,
+    )
 
 
 def _block_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) -> list[AdfNode]:
@@ -283,6 +352,69 @@ def _text_fallback_block(node: MarkdownNode) -> list[AdfNode]:
 
     text = _plain_text(node)
     return _paragraph_from_text(text) if text else []
+
+
+def _html_raw(node: MarkdownNode | None) -> str | None:
+    """Return raw HTML text for a Markdown HTML node."""
+
+    if node is None or node.get("type") != "block_html":
+        return None
+    return str(node.get("raw", ""))
+
+
+def _warn_details_fallback(diagnostics: list[Diagnostic], path: str) -> None:
+    """Report that Markdown details stayed as readable fallback content."""
+
+    diagnostics.append(
+        Diagnostic(
+            severity="warning",
+            code="MarkdownDetailsFallback",
+            path=path,
+            message=(
+                "Markdown details block could not be converted to ADF expand and was "
+                "preserved as readable fallback."
+            ),
+            fallback="text",
+        )
+    )
+
+
+def _is_details_boundary(raw: str) -> bool:
+    """Return whether raw HTML begins or closes a details block."""
+
+    return _is_details_opening(raw) or _is_details_closing(raw)
+
+
+def _is_details_opening(raw: str) -> bool:
+    """Return whether raw HTML begins with an opening details tag."""
+
+    stripped = raw.strip().lower()
+    return stripped.startswith("<details>") or stripped.startswith("<details ")
+
+
+def _is_details_closing(raw: str) -> bool:
+    """Return whether raw HTML is exactly a closing details tag."""
+
+    return raw.strip().lower() == "</details>"
+
+
+def _summary_title(raw: str) -> str | None:
+    """Extract the title from the simple supported summary forms."""
+
+    stripped = raw.strip()
+    lower = stripped.lower()
+    if not lower.startswith("<details>"):
+        return None
+    remainder = stripped[len("<details>") :].strip()
+    if not remainder.lower().startswith("<summary>") or not remainder.lower().endswith(
+        "</summary>"
+    ):
+        return None
+    title = remainder[len("<summary>") : -len("</summary>")]
+    if "<" in title or ">" in title:
+        return None
+    decoded = unescape(title).strip()
+    return decoded or None
 
 
 def _paragraph_from_text(text: str) -> list[AdfNode]:

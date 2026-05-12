@@ -62,9 +62,80 @@ function blockChildren(
   diagnostics: Diagnostic[],
   path: string,
 ): AdfNode[] {
-  return nodes.flatMap((node, index) =>
-    blockNode(node, diagnostics, `${path}/${index}`),
+  const output: AdfNode[] = []
+  for (let index = 0; index < nodes.length; index += 1) {
+    const details = detailsBlock(nodes, index, diagnostics, path)
+    if (details) {
+      output.push(...details.nodes)
+      index += details.consumed - 1
+      continue
+    }
+    output.push(...blockNode(nodes[index]!, diagnostics, `${path}/${index}`))
+  }
+  return output
+}
+
+/**
+ * Converts a simple Markdown raw-HTML <details>/<summary> sequence into ADF
+ * expand, or consumes it as readable fallback with a stable diagnostic.
+ */
+function detailsBlock(
+  nodes: MarkdownNode[],
+  index: number,
+  diagnostics: Diagnostic[],
+  path: string,
+): { nodes: AdfNode[]; consumed: number } | undefined {
+  const opening = nodes[index]
+  const openingRaw = htmlRaw(opening)
+  if (!openingRaw || !isDetailsOpening(openingRaw)) return undefined
+
+  const nodePath = `${path}/${index}`
+  const closingIndex = nodes.findIndex(
+    (node, candidateIndex) =>
+      candidateIndex > index && isDetailsClosing(htmlRaw(node) ?? ""),
   )
+  if (closingIndex === -1) {
+    warnDetailsFallback(diagnostics, nodePath)
+    return undefined
+  }
+
+  const summary = summaryTitle(openingRaw)
+  const innerNodes = nodes.slice(index + 1, closingIndex)
+  const fallback = (): { nodes: AdfNode[]; consumed: number } => ({
+    nodes: [
+      ...paragraphFromText(openingRaw.trim()),
+      ...blockChildren(innerNodes, diagnostics, `${nodePath}/content`),
+      ...paragraphFromText((htmlRaw(nodes[closingIndex]) ?? "").trim()),
+    ],
+    consumed: closingIndex - index + 1,
+  })
+
+  if (
+    path !== "/content" ||
+    summary === undefined ||
+    innerNodes.length === 0 ||
+    innerNodes.some((node) => isDetailsBoundary(htmlRaw(node) ?? ""))
+  ) {
+    warnDetailsFallback(diagnostics, nodePath)
+    return fallback()
+  }
+
+  const content = blockChildren(innerNodes, diagnostics, `${nodePath}/content`)
+  if (content.length === 0) {
+    warnDetailsFallback(diagnostics, nodePath)
+    return fallback()
+  }
+
+  return {
+    nodes: [
+      {
+        type: "expand",
+        attrs: { title: summary },
+        content,
+      },
+    ],
+    consumed: closingIndex - index + 1,
+  }
 }
 
 /**
@@ -308,6 +379,92 @@ function tableNode(
 function textFallbackBlock(node: MarkdownNode): AdfNode[] {
   const text = plainText(node)
   return text.length > 0 ? paragraphFromText(text) : []
+}
+
+/**
+ * Returns the raw HTML text for a Markdown HTML block or inline node.
+ */
+function htmlRaw(node: MarkdownNode | undefined): string | undefined {
+  if (!node || node.type !== "html") return undefined
+  return node.value ?? ""
+}
+
+/**
+ * Reports that a Markdown details block stayed as readable fallback content.
+ */
+function warnDetailsFallback(diagnostics: Diagnostic[], path: string): void {
+  diagnostics.push({
+    severity: "warning",
+    code: "MarkdownDetailsFallback",
+    path,
+    message:
+      "Markdown details block could not be converted to ADF expand and was preserved as readable fallback.",
+    fallback: "text",
+  })
+}
+
+/**
+ * Detects raw HTML details boundaries without enabling general HTML parsing.
+ */
+function isDetailsBoundary(raw: string): boolean {
+  return isDetailsOpening(raw) || isDetailsClosing(raw)
+}
+
+function isDetailsOpening(raw: string): boolean {
+  return /^<details(?:\s[^>]*)?>/i.test(raw.trim())
+}
+
+function isDetailsClosing(raw: string): boolean {
+  return /^<\/details>\s*$/i.test(raw.trim())
+}
+
+/**
+ * Extracts the summary title from the simple supported opening forms.
+ */
+function summaryTitle(raw: string): string | undefined {
+  const match = raw
+    .trim()
+    .match(/^<details>\s*<summary>([\s\S]*?)<\/summary>\s*$/i)
+  if (!match) return undefined
+  const title = match[1] ?? ""
+  if (/[<>]/.test(title)) return undefined
+  const decoded = decodeHtmlText(title).trim()
+  return decoded.length > 0 ? decoded : undefined
+}
+
+/**
+ * Decodes the small set of HTML entities expected in raw summary text.
+ */
+function decodeHtmlText(text: string): string {
+  const namedEntities: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    quot: '"',
+  }
+  return text.replace(
+    /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi,
+    (entity, body: string) => {
+      const lower = body.toLowerCase()
+      if (lower.startsWith("#x")) {
+        return codePointEntity(entity, Number.parseInt(lower.slice(2), 16))
+      }
+      if (lower.startsWith("#")) {
+        return codePointEntity(entity, Number.parseInt(lower.slice(1), 10))
+      }
+      return namedEntities[lower] ?? entity
+    },
+  )
+}
+
+function codePointEntity(entity: string, codePoint: number): string {
+  if (!Number.isFinite(codePoint)) return entity
+  try {
+    return String.fromCodePoint(codePoint)
+  } catch {
+    return entity
+  }
 }
 
 /**

@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "MarkdownDetailsFallback",
+    "message": "Markdown details block could not be converted to ADF expand and was preserved as readable fallback.",
+    "path": "/content/0",
+    "fallback": "text"
+  }
+]

@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added shared fixture coverage for `nestedExpand` flattening and no-URL `embedCard` text fallback.
+- Added Markdown-to-ADF support for simple raw HTML `<details>` / `<summary>` blocks as ADF `expand` nodes in both JS and Python.
+- Added shared Markdown-to-ADF fixtures for details blocks and malformed details fallback diagnostics.
 - Documented conservative panel, expand, nested expand, and card ADF-to-Markdown fallbacks.
 
 ### Fixed

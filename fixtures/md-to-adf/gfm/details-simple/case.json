@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.details-simple",
+  "direction": "md-to-adf",
+  "description": "Converts a simple Markdown details block to an ADF expand.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["details", "summary", "expand", "paragraph", "text", "strong"],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

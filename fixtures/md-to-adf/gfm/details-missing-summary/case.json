@@ -1,0 +1,13 @@
+{
+  "id": "md-to-adf.gfm.details-missing-summary",
+  "direction": "md-to-adf",
+  "description": "Preserves a details block without a summary as readable fallback with a diagnostic.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": ["details", "detailsFallback", "paragraph", "text"],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

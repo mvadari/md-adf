@@ -56,9 +56,9 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 
 - ADF validation/parsing against a pinned ADF schema.
 - ADF to Markdown for `doc`, `paragraph`, `heading`, `blockquote`, `bulletList`, `orderedList`, `listItem`, `codeBlock`, `rule`, simple GFM tables, task lists, panel blockquotes, expand flattening, card link/text fallback, media link/text fallback, rich inline text fallback for `mention`, `emoji`, `date`, and `status`, `text`, and `hardBreak`.
-- Markdown to ADF for paragraphs, headings, block quotes, lists, GFM task lists, code blocks, thematic breaks, GFM tables, text, hard breaks, soft breaks, links, images as link text fallback, and raw HTML as text fallback.
+- Markdown to ADF for paragraphs, headings, block quotes, lists, GFM task lists, code blocks, thematic breaks, GFM tables, simple `<details>` / `<summary>` blocks as expands, text, hard breaks, soft breaks, links, images as link text fallback, and raw HTML as text fallback.
 - Marks for `strong`, `em`, `strike`, `code`, and `link`.
-- Structured diagnostics for invalid ADF roots, unsupported ADF nodes/marks, invalid containers, invalid link marks, complex table omission, task-list fallback, panel/expand/card fallback, image/media fallback, rich inline fallback, and dropped rich inline attributes.
+- Structured diagnostics for invalid ADF roots, unsupported ADF nodes/marks, invalid containers, invalid link marks, complex table omission, task-list fallback, malformed details fallback, panel/expand/card fallback, image/media fallback, rich inline fallback, and dropped rich inline attributes.
 
 ## Known Limitations
 
@@ -67,9 +67,9 @@ Supported profiles are `jira`, `confluence`, and `portableMarkdown`. Diagnostics
 - Markdown to ADF maps images to linked text fallback instead of ADF media nodes.
 - Mixed or complex GFM task lists may fall back to ordinary list items with diagnostics.
 - ADF to Markdown renders mentions, emoji, dates, and statuses as text fallbacks; Markdown to ADF keeps that text as normal text and does not recreate rich inline node IDs.
-- ADF to Markdown renders panels, expands, nested expands, and cards as conservative Markdown fallbacks; Markdown to ADF keeps the resulting blockquotes, headings, text, and links as ordinary Markdown structures and does not recreate Atlassian-specific nodes.
+- ADF to Markdown renders panels, expands, nested expands, and cards as conservative Markdown fallbacks; Markdown to ADF supports simple raw HTML `<details>` / `<summary>` blocks as ADF expands but keeps other fallback blockquotes, headings, text, and links as ordinary Markdown structures.
 - ADF to Markdown does not yet render layout nodes, extensions, or color/underline/subscript/superscript marks.
-- Markdown raw HTML is preserved as text fallback; it is not interpreted into rich ADF.
+- Markdown raw HTML is preserved as text fallback except for simple supported `<details>` / `<summary>` expand blocks; general raw HTML preservation is not available.
 - Unsupported ADF nodes are omitted with diagnostics.
 - Markdown parser AST access is not exposed as public API yet; conversion uses real Markdown parsers internally.
 
