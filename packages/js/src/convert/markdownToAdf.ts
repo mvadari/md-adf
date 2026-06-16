@@ -165,17 +165,25 @@ function blockNode(
       ]
     case "thematicBreak":
       return [{ type: "rule" }]
-    case "blockquote":
+    case "blockquote": {
+      const blockquoteContent = blockChildren(
+        node.children ?? [],
+        diagnostics,
+        `${path}/content`,
+      )
+      demoteInvalidHeadings(
+        blockquoteContent,
+        diagnostics,
+        `${path}/content`,
+        "blockquote",
+      )
       return [
         {
           type: "blockquote",
-          content: blockChildren(
-            node.children ?? [],
-            diagnostics,
-            `${path}/content`,
-          ),
+          content: blockquoteContent,
         },
       ]
+    }
     case "list":
       return [listNode(node, diagnostics, path)]
     case "code":
@@ -300,6 +308,7 @@ function listItemNode(
     diagnostics,
     `${path}/content`,
   )
+  demoteInvalidHeadings(content, diagnostics, `${path}/content`, "listItem")
   if (typeof node.checked === "boolean") {
     prependTaskFallbackMarker(content, node.checked === true)
   }
@@ -612,6 +621,42 @@ function appendInline(nodes: AdfNode[], node: AdfNode): void {
 function plainText(node: MarkdownNode): string {
   if (typeof node.value === "string") return node.value
   return (node.children ?? []).map((child) => plainText(child)).join("")
+}
+
+/**
+ * Rewrites heading nodes to bold paragraphs inside containers that disallow them.
+ *
+ * ADF blockquote and listItem content schemas don't permit heading children;
+ * ATX syntax (`# ...`) can appear inside indented list continuations after
+ * Markdown parsing, so demote those headings rather than emit invalid ADF.
+ */
+function demoteInvalidHeadings(
+  nodes: AdfNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+  container: "listItem" | "blockquote",
+): void {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]!
+    if (node.type !== "heading") continue
+    const inline = [...(node.content ?? [])]
+    for (const child of inline) {
+      if (child.type !== "text") continue
+      const marks = [...(child.marks ?? [])]
+      if (!marks.some((mark) => mark.type === "strong")) {
+        marks.push({ type: "strong" })
+      }
+      child.marks = marks
+    }
+    nodes[index] = { type: "paragraph", content: inline }
+    diagnostics.push({
+      severity: "warning",
+      code: "HeadingDemoted",
+      path: `${path}/${index}`,
+      message: `ADF ${container} content cannot contain heading nodes; the heading was converted to a bold paragraph.`,
+      fallback: "paragraph",
+    })
+  }
 }
 
 /**

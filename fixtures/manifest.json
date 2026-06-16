@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-05-12T16:06:03.187Z",
+  "generatedAt": "2026-06-16T15:22:59.894Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -393,6 +393,19 @@
         "paragraph",
         "text",
         "link"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.list-item-heading-demotion",
+      "path": "md-to-adf/phase1/list-item-heading-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "orderedList",
+        "listItem",
+        "paragraph",
+        "text",
+        "strong",
+        "headingDemotion"
       ]
     },
     {

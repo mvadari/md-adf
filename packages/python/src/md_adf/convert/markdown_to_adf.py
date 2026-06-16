@@ -22,15 +22,24 @@ def markdown_to_adf(
 ) -> ConversionResult[AdfDocument]:
     """Convert Markdown text into an ADF document with fallback diagnostics."""
 
-    resolve_conversion_options(options)
+    resolved = resolve_conversion_options(options)
     diagnostics: list[Diagnostic] = []
     tree = cast(list[MarkdownNode], MARKDOWN_PARSER(markdown))
     content = _block_children(tree, diagnostics, "/content")
 
-    return ConversionResult(
-        value={"version": 1, "type": "doc", "content": content},
-        diagnostics=diagnostics,
-    )
+    document: AdfDocument = {"version": 1, "type": "doc", "content": content}
+
+    if resolved.validate_adf:
+        from ..adf.validate import validate_adf
+
+        result = validate_adf(document)
+        if not result.valid:
+            raise ValueError(
+                "markdown_to_adf produced ADF that fails schema validation: "
+                + "; ".join(result.errors)
+            )
+
+    return ConversionResult(value=document, diagnostics=diagnostics)
 
 
 def _block_children(
@@ -151,10 +160,12 @@ def _block_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) ->
         return [{"type": "rule"}]
 
     if node_type == "block_quote":
+        children = _block_children(_children(node), diagnostics, f"{path}/content")
+        _demote_invalid_headings(children, diagnostics, f"{path}/content", "blockquote")
         return [
             {
                 "type": "blockquote",
-                "content": _block_children(_children(node), diagnostics, f"{path}/content"),
+                "content": children,
             }
         ]
 
@@ -264,6 +275,7 @@ def _list_item_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str
     """Convert a Markdown list item, preserving task state as fallback text."""
 
     content = _block_children(_children(node), diagnostics, f"{path}/content")
+    _demote_invalid_headings(content, diagnostics, f"{path}/content", "listItem")
     if node.get("type") == "task_list_item":
         _prepend_task_fallback_marker(content, _attrs(node).get("checked") is True)
     return {
@@ -572,6 +584,41 @@ def _attrs(node: MarkdownNode) -> dict[str, Any]:
 
     attrs = node.get("attrs")
     return cast(dict[str, Any], attrs if isinstance(attrs, dict) else {})
+
+
+def _demote_invalid_headings(
+    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str, container: str
+) -> None:
+    """Rewrite heading nodes to bold paragraphs inside containers that disallow them.
+
+    ADF blockquote and listItem content schemas don't permit heading children; ATX
+    syntax (``# ...``) can appear inside indented list continuations after markdown
+    parsing, so demote those headings rather than emit invalid ADF.
+    """
+
+    for index, node in enumerate(nodes):
+        if node.get("type") != "heading":
+            continue
+        inline = list(node.get("content") or [])
+        for child in inline:
+            if child.get("type") == "text":
+                marks = list(child.get("marks") or [])
+                if not any(mark.get("type") == "strong" for mark in marks):
+                    marks.append({"type": "strong"})
+                child["marks"] = marks
+        nodes[index] = {"type": "paragraph", "content": inline}
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="HeadingDemoted",
+                path=f"{path}/{index}",
+                message=(
+                    f"ADF {container} content cannot contain heading nodes; "
+                    "the heading was converted to a bold paragraph."
+                ),
+                fallback="paragraph",
+            )
+        )
 
 
 def _local_id_from_path(prefix: str, path: str) -> str:

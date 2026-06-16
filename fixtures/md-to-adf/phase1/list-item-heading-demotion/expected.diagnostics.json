@@ -1,0 +1,16 @@
+[
+  {
+    "severity": "warning",
+    "code": "HeadingDemoted",
+    "path": "/content/0/content/0/content/1",
+    "message": "ADF listItem content cannot contain heading nodes; the heading was converted to a bold paragraph.",
+    "fallback": "paragraph"
+  },
+  {
+    "severity": "warning",
+    "code": "HeadingDemoted",
+    "path": "/content/0/content/0/content/2",
+    "message": "ADF listItem content cannot contain heading nodes; the heading was converted to a bold paragraph.",
+    "fallback": "paragraph"
+  }
+]

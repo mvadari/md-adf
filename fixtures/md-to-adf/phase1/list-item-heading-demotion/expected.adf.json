@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "orderedList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Construct a transaction: tx = LoanSet(flags={\"tf_loan_over_payment\": True})"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Result: tx.flags = 0",
+                  "marks": [{ "type": "strong" }]
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "No exception raised",
+                  "marks": [{ "type": "strong" }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
