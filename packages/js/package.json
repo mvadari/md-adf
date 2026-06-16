@@ -1,6 +1,6 @@
 {
   "name": "md-adf",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Markdown-ADF converter for JavaScript and TypeScript.",
   "keywords": [
     "adf",
