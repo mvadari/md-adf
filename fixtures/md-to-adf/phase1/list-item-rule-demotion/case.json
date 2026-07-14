@@ -1,0 +1,19 @@
+{
+  "id": "md-to-adf.phase1.list-item-rule-demotion",
+  "direction": "md-to-adf",
+  "description": "Drops a thematic break nested inside a list item, since ADF listItem content cannot contain rule nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "bulletList",
+    "listItem",
+    "paragraph",
+    "text",
+    "ruleDemotion"
+  ],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

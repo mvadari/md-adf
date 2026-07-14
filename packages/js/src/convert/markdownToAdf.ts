@@ -171,7 +171,7 @@ function blockNode(
         diagnostics,
         `${path}/content`,
       )
-      demoteInvalidHeadings(
+      sanitizeContainerContent(
         blockquoteContent,
         diagnostics,
         `${path}/content`,
@@ -308,7 +308,7 @@ function listItemNode(
     diagnostics,
     `${path}/content`,
   )
-  demoteInvalidHeadings(content, diagnostics, `${path}/content`, "listItem")
+  sanitizeContainerContent(content, diagnostics, `${path}/content`, "listItem")
   if (typeof node.checked === "boolean") {
     prependTaskFallbackMarker(content, node.checked === true)
   }
@@ -623,18 +623,198 @@ function plainText(node: MarkdownNode): string {
   return (node.children ?? []).map((child) => plainText(child)).join("")
 }
 
+type ContainerKind = "listItem" | "blockquote"
+
 /**
- * Rewrites heading nodes to bold paragraphs inside containers that disallow them.
- *
- * ADF blockquote and listItem content schemas don't permit heading children;
- * ATX syntax (`# ...`) can appear inside indented list continuations after
- * Markdown parsing, so demote those headings rather than emit invalid ADF.
+ * Rewrites the direct content of a listItem or blockquote so it only contains
+ * node types the ADF schema permits there, demoting or flattening whatever
+ * doesn't fit and recording a diagnostic for each change.
+ */
+function sanitizeContainerContent(
+  nodes: AdfNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+  container: ContainerKind,
+): void {
+  demoteInvalidBlockquotes(nodes, diagnostics, path, container)
+  if (container === "blockquote") {
+    demoteInvalidTaskLists(nodes, diagnostics, path)
+  }
+  demoteInvalidTables(nodes, diagnostics, path, container)
+  demoteInvalidRules(nodes, diagnostics, path, container)
+  demoteInvalidHeadings(nodes, diagnostics, path, container)
+  if (nodes.length === 0) {
+    nodes.push({ type: "paragraph", content: [] })
+  }
+}
+
+/**
+ * Neither listItem nor blockquote content may contain a nested blockquote, so
+ * it's flattened into its surrounding content instead. Runs as a fixed point:
+ * a flattened blockquote can itself expose another nested blockquote, which
+ * is re-examined at the same index rather than skipped.
+ */
+function demoteInvalidBlockquotes(
+  nodes: AdfNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+  container: ContainerKind,
+): void {
+  let index = 0
+  while (index < nodes.length) {
+    const node = nodes[index]!
+    if (node.type !== "blockquote") {
+      index += 1
+      continue
+    }
+    const replacement = node.content ?? []
+    nodes.splice(index, 1, ...replacement)
+    diagnostics.push({
+      severity: "warning",
+      code: "BlockquoteDemoted",
+      path: `${path}/${index}`,
+      message: `ADF ${container} content cannot contain blockquote nodes; the blockquote was flattened into its surrounding content.`,
+      fallback: "flatten",
+    })
+  }
+}
+
+/**
+ * ADF blockquote content cannot contain taskList nodes, so a task list
+ * produced from a quoted GFM task list is converted to a plain bullet list
+ * with the checked state preserved as visible text.
+ */
+function demoteInvalidTaskLists(
+  nodes: AdfNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+): void {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]!
+    if (node.type !== "taskList") continue
+    nodes[index] = taskListToBulletList(node)
+    diagnostics.push({
+      severity: "warning",
+      code: "TaskListDemoted",
+      path: `${path}/${index}`,
+      message:
+        "ADF blockquote content cannot contain taskList nodes; the task list was converted to a bullet list.",
+      fallback: "bulletList",
+    })
+  }
+}
+
+/**
+ * Converts an ADF taskList into a bulletList, prefixing each item's text with
+ * a checked/unchecked marker so the task state stays visible.
+ */
+function taskListToBulletList(taskList: AdfNode): AdfNode {
+  return {
+    type: "bulletList",
+    content: (taskList.content ?? []).map((item) => taskItemToListItem(item)),
+  }
+}
+
+/**
+ * Converts a single ADF taskItem into a listItem with a checked/unchecked
+ * text marker prepended.
+ */
+function taskItemToListItem(item: AdfNode): AdfNode {
+  const checked =
+    (item.attrs as { state?: string } | undefined)?.state === "DONE"
+  const marker = checked ? "[x] " : "[ ] "
+  return {
+    type: "listItem",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text: marker }, ...(item.content ?? [])],
+      },
+    ],
+  }
+}
+
+/**
+ * Neither listItem nor blockquote content may contain a table, so it's
+ * converted to one plain-text paragraph per row.
+ */
+function demoteInvalidTables(
+  nodes: AdfNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+  container: ContainerKind,
+): void {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]!
+    if (node.type !== "table") continue
+    const replacement = tableToParagraphs(node)
+    nodes.splice(index, 1, ...replacement)
+    diagnostics.push({
+      severity: "warning",
+      code: "TableDemoted",
+      path: `${path}/${index}`,
+      message: `ADF ${container} content cannot contain table nodes; the table was converted to plain-text rows.`,
+      fallback: "paragraph",
+    })
+    index += replacement.length - 1
+  }
+}
+
+/**
+ * Renders an ADF table as one paragraph per row, joining cell text with " | ".
+ */
+function tableToParagraphs(table: AdfNode): AdfNode[] {
+  return (table.content ?? []).flatMap((row) =>
+    paragraphFromText(
+      (row.content ?? []).map((cell) => plainTextFromAdf(cell)).join(" | "),
+    ),
+  )
+}
+
+/**
+ * Extracts the concatenated text of an ADF node subtree.
+ */
+function plainTextFromAdf(node: AdfNode): string {
+  if (node.type === "text") return node.text ?? ""
+  return (node.content ?? []).map((child) => plainTextFromAdf(child)).join("")
+}
+
+/**
+ * Neither listItem nor blockquote content may contain a rule, so a nested
+ * thematic break is dropped; it carries no textual meaning to fall back to.
+ */
+function demoteInvalidRules(
+  nodes: AdfNode[],
+  diagnostics: Diagnostic[],
+  path: string,
+  container: ContainerKind,
+): void {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]!
+    if (node.type !== "rule") continue
+    nodes.splice(index, 1)
+    diagnostics.push({
+      severity: "warning",
+      code: "RuleDropped",
+      path: `${path}/${index}`,
+      message: `ADF ${container} content cannot contain rule nodes; the horizontal rule was removed.`,
+      fallback: "drop",
+    })
+    index -= 1
+  }
+}
+
+/**
+ * Rewrites heading nodes to bold paragraphs inside containers that disallow
+ * them. ATX syntax (`# ...`) can appear inside indented list continuations
+ * after Markdown parsing, so demote those headings rather than emit invalid
+ * ADF.
  */
 function demoteInvalidHeadings(
   nodes: AdfNode[],
   diagnostics: Diagnostic[],
   path: string,
-  container: "listItem" | "blockquote",
+  container: ContainerKind,
 ): void {
   for (let index = 0; index < nodes.length; index += 1) {
     const node = nodes[index]!

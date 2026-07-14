@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "BlockquoteDemoted",
+    "path": "/content/0/content/1",
+    "message": "ADF blockquote content cannot contain blockquote nodes; the blockquote was flattened into its surrounding content.",
+    "fallback": "flatten"
+  }
+]

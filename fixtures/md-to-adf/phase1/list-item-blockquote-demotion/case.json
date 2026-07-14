@@ -1,0 +1,19 @@
+{
+  "id": "md-to-adf.phase1.list-item-blockquote-demotion",
+  "direction": "md-to-adf",
+  "description": "Flattens a blockquote nested inside a list item into the list item's own content, since ADF listItem content cannot contain blockquote nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "bulletList",
+    "listItem",
+    "paragraph",
+    "text",
+    "blockquoteDemotion"
+  ],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

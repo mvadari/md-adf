@@ -1,0 +1,20 @@
+{
+  "id": "md-to-adf.phase1.blockquote-table-demotion",
+  "direction": "md-to-adf",
+  "description": "Converts a GFM table nested inside a blockquote to one plain-text paragraph per row, since ADF blockquote content cannot contain table nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "blockquote",
+    "paragraph",
+    "text",
+    "tableDemotion"
+  ],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {
+    "python": "mistune's table plugin does not recognize GFM tables nested inside blockquote content; it parses the pipe-delimited lines as a plain paragraph, so the table-demotion path this fixture targets is unreachable in Python."
+  }
+}

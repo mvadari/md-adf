@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "TaskListDemoted",
+    "path": "/content/0/content/0",
+    "message": "ADF blockquote content cannot contain taskList nodes; the task list was converted to a bullet list.",
+    "fallback": "bulletList"
+  }
+]

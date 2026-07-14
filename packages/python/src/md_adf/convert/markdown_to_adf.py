@@ -161,7 +161,7 @@ def _block_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str) ->
 
     if node_type == "block_quote":
         children = _block_children(_children(node), diagnostics, f"{path}/content")
-        _demote_invalid_headings(children, diagnostics, f"{path}/content", "blockquote")
+        _sanitize_container_content(children, diagnostics, f"{path}/content", "blockquote")
         return [
             {
                 "type": "blockquote",
@@ -275,7 +275,7 @@ def _list_item_node(node: MarkdownNode, diagnostics: list[Diagnostic], path: str
     """Convert a Markdown list item, preserving task state as fallback text."""
 
     content = _block_children(_children(node), diagnostics, f"{path}/content")
-    _demote_invalid_headings(content, diagnostics, f"{path}/content", "listItem")
+    _sanitize_container_content(content, diagnostics, f"{path}/content", "listItem")
     if node.get("type") == "task_list_item":
         _prepend_task_fallback_marker(content, _attrs(node).get("checked") is True)
     return {
@@ -586,14 +586,198 @@ def _attrs(node: MarkdownNode) -> dict[str, Any]:
     return cast(dict[str, Any], attrs if isinstance(attrs, dict) else {})
 
 
+def _sanitize_container_content(
+    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str, container: str
+) -> None:
+    """Rewrite the direct content of a listItem or blockquote so it only contains
+    node types the ADF schema permits there, demoting or flattening whatever
+    doesn't fit and recording a diagnostic for each change.
+    """
+
+    _demote_invalid_blockquotes(nodes, diagnostics, path, container)
+    if container == "blockquote":
+        _demote_invalid_task_lists(nodes, diagnostics, path)
+    _demote_invalid_tables(nodes, diagnostics, path, container)
+    _demote_invalid_rules(nodes, diagnostics, path, container)
+    _demote_invalid_headings(nodes, diagnostics, path, container)
+    if not nodes:
+        nodes.append({"type": "paragraph", "content": []})
+
+
+def _demote_invalid_blockquotes(
+    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str, container: str
+) -> None:
+    """Flatten a nested blockquote into its surrounding content.
+
+    Neither listItem nor blockquote content may contain a nested blockquote, so
+    it's flattened into its surrounding content instead. Runs as a fixed point:
+    a flattened blockquote can itself expose another nested blockquote, which is
+    re-examined at the same index rather than skipped.
+    """
+
+    index = 0
+    while index < len(nodes):
+        node = nodes[index]
+        if node.get("type") != "blockquote":
+            index += 1
+            continue
+        replacement = list(node.get("content") or [])
+        nodes[index : index + 1] = replacement
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="BlockquoteDemoted",
+                path=f"{path}/{index}",
+                message=(
+                    f"ADF {container} content cannot contain blockquote nodes; "
+                    "the blockquote was flattened into its surrounding content."
+                ),
+                fallback="flatten",
+            )
+        )
+
+
+def _demote_invalid_task_lists(
+    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str
+) -> None:
+    """Convert a taskList to a bulletList inside a container that disallows it.
+
+    ADF blockquote content cannot contain taskList nodes, so a task list produced
+    from a quoted GFM task list is converted to a plain bullet list with the
+    checked state preserved as visible text.
+    """
+
+    for index, node in enumerate(nodes):
+        if node.get("type") != "taskList":
+            continue
+        nodes[index] = _task_list_to_bullet_list(node)
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="TaskListDemoted",
+                path=f"{path}/{index}",
+                message=(
+                    "ADF blockquote content cannot contain taskList nodes; "
+                    "the task list was converted to a bullet list."
+                ),
+                fallback="bulletList",
+            )
+        )
+
+
+def _task_list_to_bullet_list(task_list: AdfNode) -> AdfNode:
+    """Convert an ADF taskList into a bulletList with checked-state text markers."""
+
+    return {
+        "type": "bulletList",
+        "content": [_task_item_to_list_item(item) for item in task_list.get("content") or []],
+    }
+
+
+def _task_item_to_list_item(item: AdfNode) -> AdfNode:
+    """Convert a single ADF taskItem into a listItem with a checked-state marker."""
+
+    checked = (item.get("attrs") or {}).get("state") == "DONE"
+    marker = "[x] " if checked else "[ ] "
+    return {
+        "type": "listItem",
+        "content": [
+            {
+                "type": "paragraph",
+                "content": [{"type": "text", "text": marker}, *(item.get("content") or [])],
+            }
+        ],
+    }
+
+
+def _demote_invalid_tables(
+    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str, container: str
+) -> None:
+    """Convert a table to plain-text paragraph rows inside a container that
+    disallows it.
+
+    Neither listItem nor blockquote content may contain a table, so it's
+    converted to one plain-text paragraph per row.
+    """
+
+    index = 0
+    while index < len(nodes):
+        node = nodes[index]
+        if node.get("type") != "table":
+            index += 1
+            continue
+        replacement = _table_to_paragraphs(node)
+        nodes[index : index + 1] = replacement
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="TableDemoted",
+                path=f"{path}/{index}",
+                message=(
+                    f"ADF {container} content cannot contain table nodes; "
+                    "the table was converted to plain-text rows."
+                ),
+                fallback="paragraph",
+            )
+        )
+        index += len(replacement)
+
+
+def _table_to_paragraphs(table: AdfNode) -> list[AdfNode]:
+    """Render an ADF table as one paragraph per row, joining cell text with ' | '."""
+
+    paragraphs: list[AdfNode] = []
+    for row in table.get("content") or []:
+        text = " | ".join(_plain_text_from_adf(cell) for cell in row.get("content") or [])
+        paragraphs.extend(_paragraph_from_text(text))
+    return paragraphs
+
+
+def _plain_text_from_adf(node: AdfNode) -> str:
+    """Extract the concatenated text of an ADF node subtree."""
+
+    if node.get("type") == "text":
+        return str(node.get("text", ""))
+    return "".join(_plain_text_from_adf(child) for child in node.get("content") or [])
+
+
+def _demote_invalid_rules(
+    nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str, container: str
+) -> None:
+    """Drop a nested rule inside a container that disallows it.
+
+    Neither listItem nor blockquote content may contain a rule, so a nested
+    thematic break is dropped; it carries no textual meaning to fall back to.
+    """
+
+    index = 0
+    while index < len(nodes):
+        node = nodes[index]
+        if node.get("type") != "rule":
+            index += 1
+            continue
+        del nodes[index]
+        diagnostics.append(
+            Diagnostic(
+                severity="warning",
+                code="RuleDropped",
+                path=f"{path}/{index}",
+                message=(
+                    f"ADF {container} content cannot contain rule nodes; "
+                    "the horizontal rule was removed."
+                ),
+                fallback="drop",
+            )
+        )
+
+
 def _demote_invalid_headings(
     nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str, container: str
 ) -> None:
     """Rewrite heading nodes to bold paragraphs inside containers that disallow them.
 
-    ADF blockquote and listItem content schemas don't permit heading children; ATX
-    syntax (``# ...``) can appear inside indented list continuations after markdown
-    parsing, so demote those headings rather than emit invalid ADF.
+    ATX syntax (``# ...``) can appear inside indented list continuations after
+    markdown parsing, so demote those headings rather than emit invalid ADF.
     """
 
     for index, node in enumerate(nodes):

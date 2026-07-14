@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "TableDemoted",
+    "path": "/content/0/content/0/content/1",
+    "message": "ADF listItem content cannot contain table nodes; the table was converted to plain-text rows.",
+    "fallback": "paragraph"
+  }
+]

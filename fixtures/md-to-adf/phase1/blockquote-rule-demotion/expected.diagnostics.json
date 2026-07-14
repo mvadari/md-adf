@@ -1,0 +1,9 @@
+[
+  {
+    "severity": "warning",
+    "code": "RuleDropped",
+    "path": "/content/0/content/1",
+    "message": "ADF blockquote content cannot contain rule nodes; the horizontal rule was removed.",
+    "fallback": "drop"
+  }
+]

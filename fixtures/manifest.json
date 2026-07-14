@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-06-16T15:22:59.894Z",
+  "generatedAt": "2026-07-14T17:57:15.512Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -364,6 +364,63 @@
       ]
     },
     {
+      "id": "md-to-adf.phase1.blockquote-nested-blockquote-demotion",
+      "path": "md-to-adf/phase1/blockquote-nested-blockquote-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "blockquote",
+        "paragraph",
+        "text",
+        "blockquoteDemotion"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.blockquote-only-rule-demotion",
+      "path": "md-to-adf/phase1/blockquote-only-rule-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "blockquote",
+        "paragraph",
+        "ruleDemotion",
+        "emptyContentBackfill"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.blockquote-rule-demotion",
+      "path": "md-to-adf/phase1/blockquote-rule-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "blockquote",
+        "paragraph",
+        "text",
+        "ruleDemotion"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.blockquote-table-demotion",
+      "path": "md-to-adf/phase1/blockquote-table-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "blockquote",
+        "paragraph",
+        "text",
+        "tableDemotion"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.blockquote-tasklist-demotion",
+      "path": "md-to-adf/phase1/blockquote-tasklist-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "blockquote",
+        "bulletList",
+        "listItem",
+        "paragraph",
+        "text",
+        "taskListDemotion"
+      ]
+    },
+    {
       "id": "md-to-adf.phase1.core",
       "path": "md-to-adf/phase1/core/case.json",
       "direction": "md-to-adf",
@@ -396,6 +453,18 @@
       ]
     },
     {
+      "id": "md-to-adf.phase1.list-item-blockquote-demotion",
+      "path": "md-to-adf/phase1/list-item-blockquote-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "bulletList",
+        "listItem",
+        "paragraph",
+        "text",
+        "blockquoteDemotion"
+      ]
+    },
+    {
       "id": "md-to-adf.phase1.list-item-heading-demotion",
       "path": "md-to-adf/phase1/list-item-heading-demotion/case.json",
       "direction": "md-to-adf",
@@ -406,6 +475,30 @@
         "text",
         "strong",
         "headingDemotion"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.list-item-rule-demotion",
+      "path": "md-to-adf/phase1/list-item-rule-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "bulletList",
+        "listItem",
+        "paragraph",
+        "text",
+        "ruleDemotion"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.list-item-table-demotion",
+      "path": "md-to-adf/phase1/list-item-table-demotion/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "bulletList",
+        "listItem",
+        "paragraph",
+        "text",
+        "tableDemotion"
       ]
     },
     {

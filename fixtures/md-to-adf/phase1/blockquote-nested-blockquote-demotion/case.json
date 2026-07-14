@@ -1,0 +1,18 @@
+{
+  "id": "md-to-adf.phase1.blockquote-nested-blockquote-demotion",
+  "direction": "md-to-adf",
+  "description": "Flattens a blockquote nested inside another blockquote into the outer blockquote's content, since ADF blockquote content cannot contain nested blockquote nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "blockquote",
+    "paragraph",
+    "text",
+    "blockquoteDemotion"
+  ],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

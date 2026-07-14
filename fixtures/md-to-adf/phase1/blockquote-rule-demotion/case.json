@@ -1,0 +1,18 @@
+{
+  "id": "md-to-adf.phase1.blockquote-rule-demotion",
+  "direction": "md-to-adf",
+  "description": "Drops a thematic break nested inside a blockquote, since ADF blockquote content cannot contain rule nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "blockquote",
+    "paragraph",
+    "text",
+    "ruleDemotion"
+  ],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}

@@ -1,0 +1,20 @@
+{
+  "id": "md-to-adf.phase1.blockquote-tasklist-demotion",
+  "direction": "md-to-adf",
+  "description": "Converts a GFM task list nested inside a blockquote to a bullet list with checked state kept as visible text, since ADF blockquote content cannot contain taskList nodes.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "blockquote",
+    "bulletList",
+    "listItem",
+    "paragraph",
+    "text",
+    "taskListDemotion"
+  ],
+  "expectedLoss": true,
+  "skip": {},
+  "xfail": {}
+}
