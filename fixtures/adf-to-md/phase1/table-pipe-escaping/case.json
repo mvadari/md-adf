@@ -1,0 +1,21 @@
+{
+  "id": "adf-to-md.phase1.table-pipe-escaping",
+  "direction": "adf-to-md",
+  "description": "Escapes pipes inside table cells but not in paragraphs.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "paragraph",
+    "text",
+    "table",
+    "tableRow",
+    "tableHeader",
+    "tableCell",
+    "escaping"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

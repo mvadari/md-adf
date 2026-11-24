@@ -1,0 +1,17 @@
+{
+  "id": "roundtrip.supported.minimal-escaping",
+  "direction": "roundtrip",
+  "description": "Round-trips text that needs Markdown punctuation escapes only where needed.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "paragraph",
+    "text",
+    "escaping"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

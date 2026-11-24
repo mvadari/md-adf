@@ -1,6 +1,13 @@
-import { unified } from "unified"
-import remarkGfm from "remark-gfm"
+import { gfmFootnoteFromMarkdown } from "mdast-util-gfm-footnote"
+import { gfmStrikethroughFromMarkdown } from "mdast-util-gfm-strikethrough"
+import { gfmTableFromMarkdown } from "mdast-util-gfm-table"
+import { gfmTaskListItemFromMarkdown } from "mdast-util-gfm-task-list-item"
+import { gfmFootnote } from "micromark-extension-gfm-footnote"
+import { gfmStrikethrough } from "micromark-extension-gfm-strikethrough"
+import { gfmTable } from "micromark-extension-gfm-table"
+import { gfmTaskListItem } from "micromark-extension-gfm-task-list-item"
 import remarkParse from "remark-parse"
+import { unified, type Processor } from "unified"
 
 import type { AdfDocument, AdfNode } from "../adf/types.js"
 import type { Diagnostic } from "../diagnostics/diagnostic.js"
@@ -25,7 +32,31 @@ type MarkdownNode = {
   align?: Array<string | null>
 }
 
-const markdownParser = unified().use(remarkParse).use(remarkGfm)
+/**
+ * Adds GFM syntax except autolink literals. Without that extension, bare URL
+ * text stays plain text, which matches the Python parser and lets literal
+ * URLs in ADF text round-trip. `<http://...>` autolinks are core CommonMark
+ * and still parse as links.
+ */
+function gfmWithoutAutolinkLiterals(this: Processor): void {
+  const data = this.data()
+  ;(data.micromarkExtensions ??= []).push(
+    gfmFootnote(),
+    gfmStrikethrough(),
+    gfmTable(),
+    gfmTaskListItem(),
+  )
+  ;(data.fromMarkdownExtensions ??= []).push(
+    gfmFootnoteFromMarkdown(),
+    gfmStrikethroughFromMarkdown(),
+    gfmTableFromMarkdown(),
+    gfmTaskListItemFromMarkdown(),
+  )
+}
+
+const markdownParser = unified()
+  .use(remarkParse)
+  .use(gfmWithoutAutolinkLiterals)
 
 /**
  * Converts Markdown text into an ADF document and reports any lossy fallback

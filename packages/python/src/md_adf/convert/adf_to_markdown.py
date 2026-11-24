@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from typing import Any
 
 from ..adf.coerce import coerce_adf_document
@@ -11,6 +12,7 @@ from ..markdown.escape import (
     escape_link_destination,
     escape_link_title,
     escape_markdown_text,
+    is_space,
     render_code_span,
 )
 from ..options import ConversionOptionsInput, ConversionResult, resolve_conversion_options
@@ -204,7 +206,7 @@ def render_expand(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> st
         )
     )
     title = _non_empty_string(_attrs(node).get("title")) or "Expand"
-    summary = f"### {escape_markdown_text(title, True)}"
+    summary = f"### {escape_markdown_text(title, at_line_start=True)}"
     content = render_blocks(node.get("content", []), diagnostics, f"{path}/content")
     return "\n\n".join(block for block in [summary, content] if len(block) > 0)
 
@@ -226,7 +228,7 @@ def render_card(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
                 fallback="link",
             )
         )
-        return f"[{escape_markdown_text(label)}]({escape_link_destination(url)})"
+        return f"[{escape_markdown_text(label, in_link_text=True)}]({escape_link_destination(url)})"
 
     diagnostics.append(
         Diagnostic(
@@ -329,7 +331,12 @@ def render_table_row(cells: list[str]) -> str:
 def escape_table_cell_markdown(markdown: str) -> str:
     """Escape characters that would break a GFM table cell."""
 
-    return re.sub(r"(^|[^\\])\|", r"\1\\|", markdown.replace("\n", " "))
+    # A pipe after an odd number of backslashes is already escaped.
+    return re.sub(
+        r"(\\*)\|",
+        lambda match: match.group(0) if len(match.group(1)) % 2 == 1 else f"{match.group(1)}\\|",
+        markdown.replace("\n", " "),
+    )
 
 
 def render_task_list(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str:
@@ -422,7 +429,7 @@ def render_media(node: AdfNode, diagnostics: list[Diagnostic], path: str) -> str
                 fallback="link",
             )
         )
-        return f"[{escape_markdown_text(str(label))}]({escape_link_destination(url)})"
+        return f"[{escape_markdown_text(str(label), in_link_text=True)}]({escape_link_destination(url)})"
 
     diagnostics.append(
         Diagnostic(
@@ -491,14 +498,49 @@ def prefix_lines(text: str, prefix: str) -> str:
 def render_inline_content(nodes: list[AdfNode], diagnostics: list[Diagnostic], path: str) -> str:
     """Render ADF inline children by concatenating each child node."""
 
+    last = len(nodes) - 1
     return "".join(
-        render_inline(node, diagnostics, f"{path}/{index}", index == 0)
+        render_inline(
+            node,
+            diagnostics,
+            f"{path}/{index}",
+            EscapeContext(
+                at_line_start=index == 0 or nodes[index - 1].get("type") == "hardBreak",
+                space_before=index == 0 or _edge_is_space(nodes[index - 1], "end"),
+                space_after=index == last or _edge_is_space(nodes[index + 1], "start"),
+            ),
+        )
         for index, node in enumerate(nodes)
     )
 
 
+@dataclass(frozen=True)
+class EscapeContext:
+    """Where escaped text sits in the rendered Markdown."""
+
+    at_line_start: bool = False
+    space_before: bool = False
+    space_after: bool = False
+
+
+def _edge_is_space(node: AdfNode, edge: str) -> bool:
+    """Check whether a neighboring inline node renders with whitespace on an edge.
+
+    Nodes that render as Markdown syntax count as non-whitespace.
+    """
+
+    if node.get("type") == "hardBreak":
+        return True
+    if node.get("type") != "text" or node.get("marks"):
+        return False
+    text = node.get("text", "")
+    if not text:
+        return False
+    return is_space(text[0] if edge == "start" else text[-1])
+
+
 def render_inline(
-    node: AdfNode, diagnostics: list[Diagnostic], path: str, at_line_start: bool
+    node: AdfNode, diagnostics: list[Diagnostic], path: str, context: EscapeContext
 ) -> str:
     """Render one ADF inline node into Markdown or fallback text."""
 
@@ -509,7 +551,7 @@ def render_inline(
             node.get("marks", []),
             diagnostics,
             path,
-            at_line_start,
+            context,
         )
 
     if node_type == "hardBreak":
@@ -704,7 +746,7 @@ def render_marked_text(
     marks: list[dict[str, Any]],
     diagnostics: list[Diagnostic],
     path: str,
-    at_line_start: bool,
+    context: EscapeContext,
 ) -> str:
     """Apply supported ADF marks to escaped Markdown text in stable order."""
 
@@ -739,7 +781,18 @@ def render_marked_text(
             )
         return render_code_span(text)
 
-    rendered = escape_markdown_text(text, at_line_start)
+    marked = {mark.get("type") for mark in known_marks}
+    # Mark delimiters sit next to the text, so the outer context only applies
+    # to unmarked text.
+    if marked & {"strong", "em", "strike", "link"}:
+        rendered = escape_markdown_text(text, in_link_text="link" in marked)
+    else:
+        rendered = escape_markdown_text(
+            text,
+            at_line_start=context.at_line_start,
+            space_before=context.space_before,
+            space_after=context.space_after,
+        )
     for mark_type in MARK_ORDER:
         current_mark = next(
             (candidate for candidate in known_marks if candidate.get("type") == mark_type),

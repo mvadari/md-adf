@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "See https://example.com/a and www.example.com or mail a@example.com."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Autolink "
+        },
+        {
+          "type": "text",
+          "text": "https://example.com/b",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "https://example.com/b"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": " and "
+        },
+        {
+          "type": "text",
+          "text": "b@example.com",
+          "marks": [
+            {
+              "type": "link",
+              "attrs": {
+                "href": "mailto:b@example.com"
+              }
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "."
+        }
+      ]
+    }
+  ]
+}

@@ -6,6 +6,8 @@ import {
   escapeLinkDestination,
   escapeLinkTitle,
   escapeMarkdownText,
+  type EscapeContext,
+  isSpace,
   renderCodeSpan,
 } from "../markdown/escape.js"
 import {
@@ -226,7 +228,7 @@ function renderExpand(
     fallback: "flatten",
   })
   const title = nonEmptyString(node.attrs?.title) ?? "Expand"
-  const summary = `### ${escapeMarkdownText(title, true)}`
+  const summary = `### ${escapeMarkdownText(title, { atLineStart: true })}`
   const content = renderBlocks(
     node.content ?? [],
     diagnostics,
@@ -256,7 +258,7 @@ function renderCard(
       message: "ADF card was rendered as a Markdown link fallback.",
       fallback: "link",
     })
-    return `[${escapeMarkdownText(label)}](${escapeLinkDestination(url)})`
+    return `[${escapeMarkdownText(label, { inLinkText: true })}](${escapeLinkDestination(url)})`
   }
 
   diagnostics.push({
@@ -380,7 +382,12 @@ function renderTableRow(cells: string[]): string {
  * Escapes characters that would break a GFM table cell.
  */
 function escapeTableCellMarkdown(markdown: string): string {
-  return markdown.replace(/\n/g, " ").replace(/(^|[^\\])\|/g, "$1\\|")
+  // A pipe after an odd number of backslashes is already escaped.
+  return markdown
+    .replace(/\n/g, " ")
+    .replace(/(\\*)\|/g, (match, slashes: string) =>
+      slashes.length % 2 === 1 ? match : `${slashes}\\|`,
+    )
 }
 
 /**
@@ -491,7 +498,7 @@ function renderMedia(
       message: "ADF media was rendered as a Markdown link fallback.",
       fallback: "link",
     })
-    return `[${escapeMarkdownText(label)}](${escapeLinkDestination(url)})`
+    return `[${escapeMarkdownText(label, { inLinkText: true })}](${escapeLinkDestination(url)})`
   }
 
   diagnostics.push({
@@ -577,9 +584,29 @@ function renderInlineContent(
 ): string {
   return nodes
     .map((node, index) =>
-      renderInline(node, diagnostics, `${path}/${index}`, index === 0),
+      renderInline(node, diagnostics, `${path}/${index}`, {
+        atLineStart: index === 0 || nodes[index - 1]?.type === "hardBreak",
+        spaceBefore: index === 0 || edgeIsSpace(nodes[index - 1], "end"),
+        spaceAfter:
+          index === nodes.length - 1 || edgeIsSpace(nodes[index + 1], "start"),
+      }),
     )
     .join("")
+}
+
+/**
+ * Checks whether a neighboring inline node renders with whitespace or a line
+ * break on the given edge. Nodes that render as Markdown syntax count as
+ * non-whitespace.
+ */
+function edgeIsSpace(
+  node: AdfNode | undefined,
+  edge: "start" | "end",
+): boolean {
+  if (node?.type === "hardBreak") return true
+  if (node?.type !== "text" || (node.marks ?? []).length > 0) return false
+  const char = edge === "start" ? node.text?.[0] : node.text?.at(-1)
+  return isSpace(char)
 }
 
 /**
@@ -589,7 +616,7 @@ function renderInline(
   node: AdfNode,
   diagnostics: Diagnostic[],
   path: string,
-  atLineStart: boolean,
+  context: EscapeContext,
 ): string {
   switch (node.type) {
     case "text":
@@ -598,7 +625,7 @@ function renderInline(
         node.marks ?? [],
         diagnostics,
         path,
-        atLineStart,
+        context,
       )
     case "hardBreak":
       return "\\\n"
@@ -805,7 +832,7 @@ function renderMarkedText(
   marks: AdfMark[],
   diagnostics: Diagnostic[],
   path: string,
-  atLineStart: boolean,
+  context: EscapeContext,
 ): string {
   const knownMarks = marks.filter((mark) => {
     if (typeof mark.type === "string" && supportedMarks.has(mark.type)) {
@@ -833,7 +860,15 @@ function renderMarkedText(
     return renderCodeSpan(text)
   }
 
-  let rendered = escapeMarkdownText(text, atLineStart)
+  const isMarked = (type: string) =>
+    knownMarks.some((mark) => mark.type === type)
+  // Mark delimiters sit next to the text, so the outer context only applies
+  // to unmarked text.
+  const wrapped = ["strong", "em", "strike"].some(isMarked)
+  let rendered = escapeMarkdownText(
+    text,
+    wrapped || isMarked("link") ? { inLinkText: isMarked("link") } : context,
+  )
   for (const markType of markOrder) {
     const mark = knownMarks.find((candidate) => candidate.type === markType)
     if (!mark) continue

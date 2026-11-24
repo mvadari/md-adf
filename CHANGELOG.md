@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.3.0 - 2026-11-24
+
+### Changed
+
+- ADF-to-Markdown escapes Markdown punctuation only where an unescaped character would change the parse, in both JS and Python. Text such as `[label] x`, `fix_pay_chan`, `a * b`, `a {b} c`, `x < y`, and `a | b` outside tables is no longer backslash-escaped. Brackets are escaped only when they could form a link, image, reference definition, or footnote; `*`, `_`, and `~` only when they could open or close emphasis or strikethrough; `<` only before an autolink or HTML; `>` only at the start of a line. The output still round-trips through `markdownToAdf` / `markdown_to_adf`. Callers that compare exact Markdown output will see fewer backslashes.
+- JS: Markdown-to-ADF no longer turns bare URLs, `www.` addresses, or email addresses into links (GFM autolink literals). They stay plain text, as in Python. Angle-bracket autolinks such as `<https://example.com>` and `[text](url)` links still become links. `remark-gfm` is replaced by its table, strikethrough, task list, and footnote extensions.
+
+### Fixed
+
+- JS: ADF text that contains a literal URL, such as `see [RXB-1](http://x)`, now round-trips.
+- Text after a hard break is now guarded against starting a block (heading, list, blockquote, setext underline, task item, or table delimiter row).
+
 ## 0.2.0 - 2026-05-12
 
 ### Added

@@ -1,0 +1,17 @@
+{
+  "id": "roundtrip.supported.literal-url-in-link-syntax",
+  "direction": "roundtrip",
+  "description": "Round-trips literal link syntax that contains a URL.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "paragraph",
+    "text",
+    "escaping"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

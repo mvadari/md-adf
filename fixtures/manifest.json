@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-07-14T17:57:15.512Z",
+  "generatedAt": "2026-11-24T21:57:17.790Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -227,6 +227,30 @@
       ]
     },
     {
+      "id": "adf-to-md.phase1.minimal-escaping",
+      "path": "adf-to-md/phase1/minimal-escaping/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "paragraph",
+        "text",
+        "escaping"
+      ]
+    },
+    {
+      "id": "adf-to-md.phase1.table-pipe-escaping",
+      "path": "adf-to-md/phase1/table-pipe-escaping/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "paragraph",
+        "text",
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "escaping"
+      ]
+    },
+    {
       "id": "adf-to-md.phase1.unsupported-node",
       "path": "adf-to-md/phase1/unsupported-node/case.json",
       "direction": "adf-to-md",
@@ -361,6 +385,16 @@
         "taskList",
         "taskItem",
         "text"
+      ]
+    },
+    {
+      "id": "md-to-adf.phase1.bare-url-text",
+      "path": "md-to-adf/phase1/bare-url-text/case.json",
+      "direction": "md-to-adf",
+      "features": [
+        "paragraph",
+        "text",
+        "link"
       ]
     },
     {
@@ -552,6 +586,26 @@
       ]
     },
     {
+      "id": "roundtrip.supported.literal-url-in-link-syntax",
+      "path": "roundtrip/supported/literal-url-in-link-syntax/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "paragraph",
+        "text",
+        "escaping"
+      ]
+    },
+    {
+      "id": "roundtrip.supported.minimal-escaping",
+      "path": "roundtrip/supported/minimal-escaping/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "paragraph",
+        "text",
+        "escaping"
+      ]
+    },
+    {
       "id": "roundtrip.supported.simple-table",
       "path": "roundtrip/supported/simple-table/case.json",
       "direction": "roundtrip",
@@ -562,6 +616,20 @@
         "tableCell",
         "paragraph",
         "text"
+      ]
+    },
+    {
+      "id": "roundtrip.supported.table-pipe-escaping",
+      "path": "roundtrip/supported/table-pipe-escaping/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "paragraph",
+        "text",
+        "table",
+        "tableRow",
+        "tableHeader",
+        "tableCell",
+        "escaping"
       ]
     },
     {

@@ -1,0 +1,17 @@
+{
+  "id": "adf-to-md.phase1.minimal-escaping",
+  "direction": "adf-to-md",
+  "description": "Escapes Markdown punctuation only where it would change the parse.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "paragraph",
+    "text",
+    "escaping"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}
