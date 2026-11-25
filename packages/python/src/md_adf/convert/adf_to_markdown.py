@@ -783,9 +783,15 @@ def render_marked_text(
 
     marked = {mark.get("type") for mark in known_marks}
     # Mark delimiters sit next to the text, so the outer context only applies
-    # to unmarked text.
-    if marked & {"strong", "em", "strike", "link"}:
-        rendered = escape_markdown_text(text, in_link_text="link" in marked)
+    # to unmarked text. Text with a link mark is link text, where every bracket
+    # is escaped. Otherwise the delimiter of the innermost mark (MARK_ORDER
+    # applies strong, then em, then strike) is the character on each side, so
+    # the bracket rules know that no `(`, `[` or `:` follows the text.
+    if "link" in marked:
+        rendered = escape_markdown_text(text, in_link_text=True)
+    elif marked & {"strong", "em", "strike"}:
+        delimiter = "*" if marked & {"strong", "em"} else "~"
+        rendered = escape_markdown_text(text, char_before=delimiter, char_after=delimiter)
     else:
         rendered = escape_markdown_text(
             text,

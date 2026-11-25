@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-24T21:57:17.790Z",
+  "generatedAt": "2026-11-25T04:52:37.343Z",
   "cases": [
     {
       "id": "adf-to-md.basic.paragraph",
@@ -209,6 +209,19 @@
         "orderedList",
         "listItem",
         "codeBlock"
+      ]
+    },
+    {
+      "id": "adf-to-md.phase1.marked-brackets",
+      "path": "adf-to-md/phase1/marked-brackets/case.json",
+      "direction": "adf-to-md",
+      "features": [
+        "paragraph",
+        "text",
+        "strong",
+        "em",
+        "strike",
+        "escaping"
       ]
     },
     {
@@ -592,6 +605,19 @@
       "features": [
         "paragraph",
         "text",
+        "escaping"
+      ]
+    },
+    {
+      "id": "roundtrip.supported.marked-brackets",
+      "path": "roundtrip/supported/marked-brackets/case.json",
+      "direction": "roundtrip",
+      "features": [
+        "paragraph",
+        "text",
+        "strong",
+        "em",
+        "strike",
         "escaping"
       ]
     },

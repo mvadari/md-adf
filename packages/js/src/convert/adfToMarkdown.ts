@@ -863,11 +863,18 @@ function renderMarkedText(
   const isMarked = (type: string) =>
     knownMarks.some((mark) => mark.type === type)
   // Mark delimiters sit next to the text, so the outer context only applies
-  // to unmarked text.
-  const wrapped = ["strong", "em", "strike"].some(isMarked)
+  // to unmarked text. Text with a link mark is link text, where every bracket
+  // is escaped. Otherwise the delimiter of the innermost mark (markOrder
+  // applies strong, then em, then strike) is the character on each side, so
+  // the bracket rules know that no `(`, `[` or `:` follows the text.
+  const delimiter = isMarked("strong") || isMarked("em") ? "*" : "~"
   let rendered = escapeMarkdownText(
     text,
-    wrapped || isMarked("link") ? { inLinkText: isMarked("link") } : context,
+    isMarked("link")
+      ? { inLinkText: true }
+      : ["strong", "em", "strike"].some(isMarked)
+        ? { charBefore: delimiter, charAfter: delimiter }
+        : context,
   )
   for (const markType of markOrder) {
     const mark = knownMarks.find((candidate) => candidate.type === markType)

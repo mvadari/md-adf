@@ -1,0 +1,20 @@
+{
+  "id": "adf-to-md.phase1.marked-brackets",
+  "direction": "adf-to-md",
+  "description": "Leaves brackets in strong, em and strike text unescaped when they cannot form a link.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "paragraph",
+    "text",
+    "strong",
+    "em",
+    "strike",
+    "escaping"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "type": "doc",
+  "content": [
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "[Provisional analysis from the RXB bot]",
+          "marks": [
+            {
+              "type": "em"
+            },
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "[label]",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "[label]",
+          "marks": [
+            {
+              "type": "strike"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "[a](b)",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "[a]",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "(b)"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "x*",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "[a]",
+          "marks": [
+            {
+              "type": "strong"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "text": ": b"
+        }
+      ]
+    }
+  ]
+}

@@ -23,12 +23,16 @@ def escape_markdown_text(
     space_before: bool | None = None,
     space_after: bool = False,
     in_link_text: bool = False,
+    char_before: str | None = None,
+    char_after: str | None = None,
 ) -> str:
     """Escape Markdown punctuation only where an unescaped character could change the parse.
 
     `space_before` and `space_after` say whether the text edges touch whitespace
     or a line boundary. Unknown neighbors are treated as characters that could
-    combine with the text to form Markdown syntax.
+    combine with the text to form Markdown syntax. `char_before` and
+    `char_after` give the rendered characters next to the text when the caller
+    knows them.
     """
 
     if space_before is None:
@@ -67,10 +71,12 @@ def escape_markdown_text(
             open_brackets.append(index)
         elif char == "]":
             opener = open_brackets.pop() if open_brackets else None
-            following = char_at(index + 1)
+            following = char_after if index == length - 1 else char_at(index + 1)
             # Without an opener in this text, a `[` in an earlier node may start
             # the line, so `]:` is treated as a possible definition.
-            definition = following == ":" and (opener is None or _starts_definition(text, opener))
+            definition = following == ":" and (
+                opener is None or _starts_definition(text, opener, char_before)
+            )
             # Mistune reads an escaped backtick inside `[...]` as a code span start.
             backtick_inside = "`" in text[opener or 0 : index]
             if (
@@ -110,10 +116,12 @@ def escape_markdown_text(
     )
 
 
-def _starts_definition(text: str, opener: int) -> bool:
+def _starts_definition(text: str, opener: int, char_before: str | None) -> bool:
     """Check whether `[label]:` at `opener` would form a reference definition."""
 
     line_start = text.rfind("\n", 0, opener) + 1
+    if line_start == 0 and char_before is not None and char_before != "\n":
+        return False
     return re.fullmatch(r" {0,3}", text[line_start:opener]) is not None
 
 

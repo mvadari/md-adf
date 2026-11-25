@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.3.1 - 2026-11-25
+
+### Fixed
+
+- ADF-to-Markdown no longer escapes brackets in strong, em, or strike text when they cannot form a link, in both JS and Python. `[label]` with strong renders as `**[label]**`, not `**\[label\]**`. Brackets followed by `(` or `[` inside the text, and link-marked text, are still escaped.
+
 ## 0.3.0 - 2026-11-24
 
 ### Changed

@@ -1,0 +1,20 @@
+{
+  "id": "roundtrip.supported.marked-brackets",
+  "direction": "roundtrip",
+  "description": "Round-trips brackets in strong, em and strike text.",
+  "profile": "portableMarkdown",
+  "options": {
+    "markdownDialect": "gfm"
+  },
+  "features": [
+    "paragraph",
+    "text",
+    "strong",
+    "em",
+    "strike",
+    "escaping"
+  ],
+  "expectedLoss": false,
+  "skip": {},
+  "xfail": {}
+}

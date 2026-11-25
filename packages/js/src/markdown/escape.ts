@@ -12,6 +12,10 @@ export interface EscapeContext {
   spaceAfter?: boolean
   /** The text is inside Markdown link text, so all brackets are escaped. */
   inLinkText?: boolean
+  /** The rendered character just before the text, when the caller knows it. */
+  charBefore?: string
+  /** The rendered character just after the text, when the caller knows it. */
+  charAfter?: string
 }
 
 export const isSpace = (char: string | undefined): boolean =>
@@ -35,6 +39,8 @@ export function escapeMarkdownText(
     spaceBefore = atLineStart,
     spaceAfter = false,
     inLinkText = false,
+    charBefore,
+    charAfter,
   } = context
   const escapes = new Set<number>()
   // `undefined` marks the start or end of the text; `spaceBefore` and
@@ -69,11 +75,12 @@ export function escapeMarkdownText(
       openBrackets.push(index)
     } else if (char === "]") {
       const opener = openBrackets.pop()
-      const next = after(index)
+      const next = index === text.length - 1 ? charAfter : after(index)
       // Without an opener in this text, a `[` in an earlier node may start
       // the line, so `]:` is treated as a possible definition.
       const definition =
-        next === ":" && (opener === undefined || startsDefinition(text, opener))
+        next === ":" &&
+        (opener === undefined || startsDefinition(text, opener, charBefore))
       // Mistune reads an escaped backtick inside `[...]` as a code span start.
       const backtickInside = text.slice(opener ?? 0, index).includes("`")
       if (
@@ -128,8 +135,15 @@ export function escapeMarkdownText(
  * Checks whether the `[` at `opener` is the first character on its line, after
  * up to three spaces, so that `[label]:` would form a reference definition.
  */
-function startsDefinition(text: string, opener: number): boolean {
+function startsDefinition(
+  text: string,
+  opener: number,
+  charBefore: string | undefined,
+): boolean {
   const lineStart = text.lastIndexOf("\n", opener - 1) + 1
+  if (lineStart === 0 && charBefore !== undefined && charBefore !== "\n") {
+    return false
+  }
   return /^ {0,3}$/.test(text.slice(lineStart, opener))
 }
 
